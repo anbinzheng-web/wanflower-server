@@ -410,7 +410,7 @@ enum BlogStatus {
 model User {
   id         Int      @id @default(autoincrement())
   email      String   @unique
-  password   String
+  password   String?  // 允许为空，支持第三方登录用户
   role       Role     @default(user)
   
   // 用户基本信息
@@ -423,22 +423,31 @@ model User {
   gender     Gender?
   
   // 账户状态
-  is_active  Boolean  @default(true)
-  is_verified Boolean @default(false)
-  last_login DateTime?
+  is_active     Boolean   @default(true)
+  is_verified  Boolean   @default(false)
+  last_login   DateTime?
+  login_count  Int       @default(0)  // 登录次数统计
+  
+  // 第三方登录信息
+  oauth_providers OAuthProvider[]
+  
+  // 设备管理
+  user_devices UserDevice[]
   
   // 关联关系
-  cart       Cart?
-  orders     Order[]
-  reviews    ProductReview[]
-  addresses  UserAddress[]   // 用户地址
-  review_votes ReviewHelpfulVote[] // 评论投票记录
+  cart           Cart?
+  orders         Order[]
+  reviews        ProductReview[]
+  addresses      UserAddress[]   // 用户地址
+  review_votes   ReviewHelpfulVote[] // 评论投票记录
+  refresh_tokens RefreshToken[] // Refresh Token
   
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   
   @@index([email])
   @@index([role])
+  @@index([is_verified])
 }
 
 // 用户地址
@@ -461,6 +470,98 @@ model UserAddress {
   updated_at   DateTime @updatedAt
   
   @@index([user_id])
+}
+
+// 邮箱验证码
+model EmailVerification {
+  id         Int      @id @default(autoincrement())
+  email      String   @db.VarChar(255)
+  code       String   @db.VarChar(10)   // 验证码
+  type       VerificationType            // 验证类型：注册、重置密码等
+  expires_at DateTime                    // 过期时间
+  is_used    Boolean  @default(false)    // 是否已使用
+  
+  created_at DateTime @default(now())
+  
+  @@index([email])
+  @@index([expires_at])
+}
+
+// 第三方登录提供商
+model OAuthProvider {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  provider   String   @db.VarChar(50)   // google, facebook, github等
+  provider_id String  @db.VarChar(255)  // 第三方平台的用户ID
+  email      String?  @db.VarChar(255)   // 第三方平台的邮箱
+  name       String?  @db.VarChar(100)   // 第三方平台的用户名
+  avatar_url String?  @db.VarChar(500)   // 第三方平台的头像
+  
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  
+  @@unique([provider, provider_id])
+  @@index([user_id])
+  @@index([provider])
+}
+
+// 用户设备管理
+model UserDevice {
+  id           Int      @id @default(autoincrement())
+  user_id      Int
+  device_id    String   @db.VarChar(255)  // 设备唯一标识
+  device_name  String?  @db.VarChar(100)  // 设备名称
+  device_type  String?  @db.VarChar(50)   // 设备类型：mobile, desktop, tablet
+  user_agent   String?  @db.VarChar(500)   // 用户代理
+  ip_address   String?  @db.VarChar(45)   // IP地址
+  is_trusted   Boolean  @default(false)    // 是否受信任设备
+  last_active  DateTime @default(now())    // 最后活跃时间
+  
+  user         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  
+  @@unique([user_id, device_id])
+  @@index([user_id])
+  @@index([device_id])
+}
+
+// Refresh Token管理
+model RefreshToken {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  device_id  String?  @db.VarChar(255)  // 关联设备
+  token      String   @db.VarChar(500)  // Refresh Token
+  expires_at DateTime                   // 过期时间
+  is_revoked Boolean  @default(false)   // 是否已撤销
+  
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  
+  @@index([user_id])
+  @@index([token])
+  @@index([expires_at])
+}
+
+// 登录尝试记录（防暴力破解）
+model LoginAttempt {
+  id         Int      @id @default(autoincrement())
+  email      String?  @db.VarChar(255)
+  ip_address String   @db.VarChar(45)
+  user_agent String?  @db.VarChar(500)
+  success    Boolean                   // 是否成功
+  reason     String?  @db.VarChar(100) // 失败原因
+  
+  created_at DateTime @default(now())
+  
+  @@index([email])
+  @@index([ip_address])
+  @@index([created_at])
 }
 
 // ================================
@@ -533,4 +634,12 @@ enum Gender {
   MALE
   FEMALE
   OTHER
+}
+
+// 验证类型
+enum VerificationType {
+  REGISTER     // 注册验证
+  RESET_PASSWORD // 重置密码
+  CHANGE_EMAIL   // 更换邮箱
+  TWO_FACTOR     // 双因素认证
 }

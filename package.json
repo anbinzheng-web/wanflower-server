@@ -37,6 +37,7 @@
     "class-validator": "^0.14.2",
     "express": "^5.1.0",
     "nestjs-pino": "^4.4.0",
+    "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "pino": "^9.9.5",
     "pino-http": "^10.5.0",
@@ -55,6 +56,7 @@
     "@types/jest": "^30.0.0",
     "@types/negotiator": "^0.6.4",
     "@types/node": "^24.3.3",
+    "@types/passport-google-oauth20": "^2.0.16",
     "prisma": "^6.16.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"

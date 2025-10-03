@@ -155,4 +155,57 @@ export class UserService {
       throw error;
     }
   }
+
+  /**
+   * 更新用户最后登录时间
+   * @param userId 用户ID
+   */
+  async updateLastLogin(userId: number) {
+    try {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { 
+          last_login: new Date(),
+          login_count: { increment: 1 },
+        },
+      });
+
+      this.customLogger.info('更新用户登录时间', { userId }, {
+        module: 'UserService',
+        action: 'updateLastLogin',
+      });
+    } catch (error) {
+      this.customLogger.logError(error, {
+        module: 'UserService',
+        action: 'updateLastLogin',
+      }, { userId });
+      throw error;
+    }
+  }
+
+  /**
+   * 验证用户邮箱
+   * @param userId 用户ID
+   */
+  async verifyUserEmail(userId: number) {
+    try {
+      const updatedUser = await this.prisma.user.update({
+        where: { id: userId },
+        data: { is_verified: true },
+      });
+
+      this.customLogger.info('用户邮箱已验证', { userId }, {
+        module: 'UserService',
+        action: 'verifyUserEmail',
+      });
+
+      return updatedUser;
+    } catch (error) {
+      this.customLogger.logError(error, {
+        module: 'UserService',
+        action: 'verifyUserEmail',
+      }, { userId });
+      throw error;
+    }
+  }
 }
