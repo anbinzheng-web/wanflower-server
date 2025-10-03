@@ -1,10 +1,10 @@
-import { Controller, Post, Body, UnauthorizedException, Req, Res, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from 'user/services/user.service';
 import { CreateUserDto, LoginDto } from 'user/dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { AuthGuard } from '@nestjs/passport';
+// import { AuthGuard } from '@nestjs/passport'; // TODO: 启用Google OAuth2时取消注释
 // import { VerificationType } from '@prisma/client';
 
 @ApiTags('auth')
@@ -130,6 +130,8 @@ export class AuthController {
     return await this.authService.sendVerificationCode(body.email, body.type);
   }
 
+  // TODO: Google OAuth2 路由 - 配置好Google开发者控制台信息后启用
+  /*
   @Get('google')
   @ApiOperation({ summary: 'Google OAuth2 登录' })
   @UseGuards(AuthGuard('google'))
@@ -164,4 +166,5 @@ export class AuthController {
       res.redirect(`${frontendUrl}/auth/error?message=${encodeURIComponent('Google登录失败')}`);
     }
   }
+  */
 }

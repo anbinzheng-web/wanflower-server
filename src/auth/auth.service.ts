@@ -273,11 +273,8 @@ export class AuthService {
     }
   }
 
-  /**
-   * 处理Google用户登录
-   * @param googleUser Google用户信息
-   * @returns 用户信息和Token
-   */
+  // TODO: Google OAuth2 用户处理 - 配置好Google开发者控制台信息后启用
+  /*
   async handleGoogleUser(googleUser: {
     googleId: string;
     email: string;
@@ -332,4 +329,5 @@ export class AuthService {
       throw error;
     }
   }
+  */
 }

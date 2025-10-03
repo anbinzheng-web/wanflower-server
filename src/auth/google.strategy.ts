@@ -1,13 +1,21 @@
+// TODO: Google OAuth2 集成 - 需要配置Google开发者控制台信息后启用
+// 配置步骤：
+// 1. 访问 https://console.developers.google.com/
+// 2. 创建新项目或选择现有项目
+// 3. 启用 Google+ API
+// 4. 创建OAuth 2.0客户端ID
+// 5. 设置授权重定向URI: http://localhost:3000/auth/google/callback
+// 6. 在.env文件中配置以下环境变量：
+//    GOOGLE_CLIENT_ID=your_google_client_id
+//    GOOGLE_CLIENT_SECRET=your_google_client_secret
+//    GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
+
+/*
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { AuthService } from './auth.service';
 
-/**
- * Google OAuth2 策略
- * 处理Google账号登录
- */
-@Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private authService: AuthService) {
     super({
@@ -18,13 +26,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
-  /**
-   * 验证Google用户信息
-   * @param accessToken Google访问令牌
-   * @param refreshToken Google刷新令牌
-   * @param profile Google用户信息
-   * @param done 回调函数
-   */
   async validate(
     accessToken: string,
     refreshToken: string,
@@ -44,12 +45,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         refreshToken,
       };
 
-      // 调用认证服务处理Google用户
       const result = await this.authService.handleGoogleUser(user);
-      
       done(null, result);
     } catch (error) {
       done(error, false);
     }
   }
 }
+*/

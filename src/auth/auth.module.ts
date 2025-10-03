@@ -4,7 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { UsersModule } from 'user/user.module';
 import { JwtStrategy } from './jwt.strategy';
-import { GoogleStrategy } from './google.strategy';
+// import { GoogleStrategy } from './google.strategy'; // TODO: 启用Google OAuth2时取消注释
 import { AuthController } from './auth.controller';
 
 @Module({
@@ -16,7 +16,11 @@ import { AuthController } from './auth.controller';
       signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '3600s' },
     }),
   ],
-  providers: [AuthService, JwtStrategy, GoogleStrategy],
+  providers: [
+    AuthService, 
+    JwtStrategy, 
+    // GoogleStrategy, // TODO: 启用Google OAuth2时取消注释
+  ],
   controllers: [AuthController],
   exports: [AuthService],
 })
