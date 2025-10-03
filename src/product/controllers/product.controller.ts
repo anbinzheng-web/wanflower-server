@@ -1,96 +1,271 @@
-import { Controller, Get, Post, Query, UseInterceptors, UploadedFile, Body, Param, ParseIntPipe } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiProperty } from '@nestjs/swagger';
-import { ProductListDto, ProductImageUploadDto, ProductUpdateDto, ProductCreateDto } from 'product/dtos';
-import { PrismaService } from 'shared/services/prisma.service';
-import {} from 'auth/roles.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
-import Express from 'express';
-import { UploadService } from "shared/services/upload/upload.service";
-import { ByIdDto } from "shared/dto/byId.dto";
+import { 
+  Controller, Get, Post, Put, Delete, Query, UseInterceptors, 
+  UploadedFile, UploadedFiles, Body, Param, ParseIntPipe, 
+  UseGuards, HttpStatus
+} from "@nestjs/common";
+import { 
+  ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiResponse,
+  ApiBearerAuth, ApiParam
+} from '@nestjs/swagger';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from 'auth/jwt-auth.guard';
+import { RolesGuard } from 'auth/roles.guard';
+import { Roles } from 'auth/roles.decorator';
+import { Role } from 'auth/roles.enum';
+import { MediaType } from '@prisma/client';
+import { ProductService } from '../servers/product.server';
+import { ProductMediaService } from '../servers/product-media.service';
+import { 
+  ProductListDto, ProductDetailDto, ProductCreateDto, ProductUpdateDto,
+  ProductViewDto, ProductBatchDeleteDto, ProductBatchUpdateStatusDto,
+  ProductMediaUploadDto, ProductMediaUpdateDto, ProductMediaDeleteDto,
+  ProductMediaMigrateToCdnDto,
+  CategoryListDto, CategoryCreateDto, CategoryUpdateDto
+} from '../dtos';
 
 @ApiTags('product')
 @Controller('product')
 export class ProductController {
-  constructor(private prisma: PrismaService, private uploadService: UploadService) {}
+  constructor(
+    private productService: ProductService,
+    private productMediaService: ProductMediaService
+  ) {}
+
+  // ================================
+  // 公开接口（无需权限）
+  // ================================
 
   @Get('list')
-  async list(@Query() query: ProductListDto) {
-    const [productList, productTotal] = await Promise.all([
-      this.prisma.product.findMany({
-        skip: (query.page - 1) * query.page_size,
-        take: query.page_size,
-        where: {},
-        orderBy: {
-          price: query.price_order
-        }
-      }),
-      this.prisma.product.count({
-        where: {}
-      })
-    ])
-    return {
-      records: productList,
-      total: productTotal,
-      page: query.page,
-      page_size: query.page_size
-    }
+  @ApiOperation({ summary: '获取产品列表', description: '支持筛选、排序、分页的产品列表' })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功' })
+  async getProductList(@Query() query: ProductListDto) {
+    return await this.productService.getProductList(query);
   }
 
-  @Get('detail')
-  async detail(@Body() body: ByIdDto) { 
-    return this.prisma.product.findUnique({ where: { id: body.id } })
+  @Get('detail/:id')
+  @ApiOperation({ summary: '获取产品详情' })
+  @ApiParam({ name: 'id', description: '产品ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '产品不存在' })
+  async getProductDetail(@Param('id', ParseIntPipe) id: number) {
+    return await this.productService.getProductDetail({ id });
   }
+
+  @Post('view')
+  @ApiOperation({ summary: '增加产品浏览量' })
+  @ApiResponse({ status: HttpStatus.OK, description: '操作成功' })
+  async incrementProductView(@Body() data: ProductViewDto) {
+    return await this.productService.incrementProductView(data);
+  }
+
+  @Get('media/:productId')
+  @ApiOperation({ summary: '获取产品媒体文件' })
+  @ApiParam({ name: 'productId', description: '产品ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功' })
+  async getProductMedia(@Param('productId', ParseIntPipe) productId: number) {
+    return await this.productMediaService.getProductMedia(productId);
+  }
+
+  // ================================
+  // 管理接口（需要员工或管理员权限）
+  // ================================
 
   @Post('create')
-  async create(@Body() body: ProductCreateDto) {
-    await this.prisma.product.create({
-      data: body
-    })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '创建产品', description: '需要员工或管理员权限' })
+  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '参数错误' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async createProduct(@Body() data: ProductCreateDto) {
+    return await this.productService.createProduct(data);
   }
 
-  @Post('update')
-  async update(@Body() body: ProductUpdateDto) {
-    await this.prisma.product.update({
-      where: { id: body.id },
-      data: body
-    })
+  @Put('update')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '更新产品', description: '需要员工或管理员权限' })
+  @ApiResponse({ status: HttpStatus.OK, description: '更新成功' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '产品不存在' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async updateProduct(@Body() data: ProductUpdateDto) {
+    return await this.productService.updateProduct(data);
   }
 
-  @Post('delete')
-  async delete(@Body() body: ByIdDto) {
-    await this.prisma.product.update({
-      where: { id: body.id },
-      data: { deleted_at: new Date() }
-    })
+  @Delete('delete/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '删除产品', description: '软删除，需要员工或管理员权限' })
+  @ApiParam({ name: 'id', description: '产品ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: '删除成功' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '产品不存在' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async deleteProduct(@Param('id', ParseIntPipe) id: number) {
+    return await this.productService.deleteProduct(id);
   }
 
-  @Post('upload_image')
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({ type: ProductImageUploadDto })
+  @Post('batch-delete')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '批量删除产品', description: '需要员工或管理员权限' })
+  @ApiResponse({ status: HttpStatus.OK, description: '删除成功' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async batchDeleteProducts(@Body() data: ProductBatchDeleteDto) {
+    return await this.productService.batchDeleteProducts(data);
+  }
+
+  @Post('batch-update-status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '批量更新产品状态', description: '需要员工或管理员权限' })
+  @ApiResponse({ status: HttpStatus.OK, description: '更新成功' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async batchUpdateProductStatus(@Body() data: ProductBatchUpdateStatusDto) {
+    return await this.productService.batchUpdateProductStatus(data);
+  }
+
+  // ================================
+  // 媒体文件管理接口（需要员工或管理员权限）
+  // ================================
+
+  @Post('media/upload')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
   @UseInterceptors(FileInterceptor('file'))
-  async upload(@UploadedFile() file: Express.Multer.File, @Body() body: Omit<ProductImageUploadDto, 'file'>) {
-    // TODO: 还需要存储到数据库中去。
-    return this.uploadService.upload(file);
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: '上传产品媒体文件', description: '支持图片和视频，需要员工或管理员权限' })
+  @ApiBody({ type: ProductMediaUploadDto })
+  @ApiResponse({ status: HttpStatus.CREATED, description: '上传成功' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '文件格式或大小不符合要求' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async uploadProductMedia(
+    @UploadedFile() file: any,
+    @Body() data: Omit<ProductMediaUploadDto, 'file'>
+  ) {
+    return await this.productMediaService.uploadProductMedia(file, data);
   }
 
-  @Post('delete_image/:id')
-  async deleteImage(@Param('id') id) {
-    return this.prisma.productImage.delete({ where: { id: Number(id) } })
+  @Post('media/batch-upload/:productId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @UseInterceptors(FilesInterceptor('files', 10)) // 最多10个文件
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: '批量上传产品媒体文件', description: '需要员工或管理员权限' })
+  @ApiParam({ name: 'productId', description: '产品ID' })
+  @ApiResponse({ status: HttpStatus.CREATED, description: '上传成功' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async batchUploadProductMedia(
+    @UploadedFiles() files: any[],
+    @Param('productId', ParseIntPipe) productId: number,
+    @Body('type') type: MediaType = MediaType.IMAGE
+  ) {
+    return await this.productMediaService.batchUploadProductMedia(files, productId, type);
   }
 
-  @Post('views')
-  @ApiOperation({ description: '商品浏览量+1' })
-  async views(@Body() body: ByIdDto) {
-    // TODO：这里需要考虑并发问题，后续优化。（使用 Redis 技术，然后定时同步至数据库）
-    const product = await this.prisma.product.findUnique({
-      where: { id: body.id },
-    })
-    if (product) {
-      product.view_count ++;
-      await this.prisma.product.update({
-        where: { id: body.id },
-        data: { view_count: product.view_count }
-      })
-    }
+  @Put('media/update')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '更新媒体文件信息', description: '需要员工或管理员权限' })
+  @ApiResponse({ status: HttpStatus.OK, description: '更新成功' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '媒体文件不存在' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async updateProductMedia(@Body() data: ProductMediaUpdateDto) {
+    return await this.productMediaService.updateProductMedia(data);
+  }
+
+  @Delete('media/delete')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '删除媒体文件', description: '需要员工或管理员权限' })
+  @ApiResponse({ status: HttpStatus.OK, description: '删除成功' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '媒体文件不存在' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async deleteProductMedia(@Body() data: ProductMediaDeleteDto) {
+    return await this.productMediaService.deleteProductMedia(data);
+  }
+
+  // ================================
+  // CDN迁移接口（仅管理员权限）
+  // ================================
+
+  @Post('media/migrate-to-cdn')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '迁移媒体文件到CDN', description: '仅管理员权限' })
+  @ApiResponse({ status: HttpStatus.OK, description: '迁移成功' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async migrateMediaToCdn(@Body() data: ProductMediaMigrateToCdnDto) {
+    return await this.productMediaService.migrateMediaToCdn(data);
+  }
+
+  @Post('media/batch-migrate-to-cdn/:productId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '批量迁移产品媒体到CDN', description: '仅管理员权限' })
+  @ApiParam({ name: 'productId', description: '产品ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: '迁移完成' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async batchMigrateProductMediaToCdn(@Param('productId', ParseIntPipe) productId: number) {
+    return await this.productMediaService.batchMigrateProductMediaToCdn(productId);
+  }
+
+  // ================================
+  // 产品分类管理接口
+  // ================================
+
+  @Get('category/list')
+  @ApiOperation({ summary: '获取产品分类列表' })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功' })
+  async getCategoryList(@Query() query: CategoryListDto) {
+    return await this.productService.getCategoryList(query);
+  }
+
+  @Post('category/create')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '创建产品分类', description: '需要员工或管理员权限' })
+  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '参数错误' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async createCategory(@Body() data: CategoryCreateDto) {
+    return await this.productService.createCategory(data);
+  }
+
+  @Put('category/update')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '更新产品分类', description: '需要员工或管理员权限' })
+  @ApiResponse({ status: HttpStatus.OK, description: '更新成功' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '分类不存在' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async updateCategory(@Body() data: CategoryUpdateDto) {
+    return await this.productService.updateCategory(data);
+  }
+
+  @Delete('category/delete/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '删除产品分类', description: '仅管理员权限，且分类下不能有产品或子分类' })
+  @ApiParam({ name: 'id', description: '分类ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: '删除成功' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '分类下有产品或子分类，无法删除' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '分类不存在' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async deleteCategory(@Param('id', ParseIntPipe) id: number) {
+    return await this.productService.deleteCategory(id);
   }
 }

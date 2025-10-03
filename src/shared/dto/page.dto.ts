@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsInt, IsOptional, Min, IsIn, IsEnum, IsNumber, IsNotEmpty } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
-import { ProductImageType, ProductStatus } from '@prisma/client';
+import { ProductStatus } from '@prisma/client';
 import { PartialType } from '@nestjs/mapped-types';
 
 export class PageDto {

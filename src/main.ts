@@ -21,7 +21,7 @@ async function bootstrap() {
     }),
   );
   app.useGlobalInterceptors(new ResponseInterceptor)
-  app.useGlobalFilters(new AllExceptionsFilter)
+  // AllExceptionsFilter 现在通过 APP_FILTER 在模块中注册
   app.useStaticAssets(process.env.IMAGE_LOCAL_UPLOAD_PATH || 'uploads', { prefix: '/images' });
 
   // 配置 Swagger 文档

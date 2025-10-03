@@ -4,7 +4,8 @@ import { registerGlobalProperties } from '../src/globalProperties';
 registerGlobalProperties();
 const prisma = new PrismaClient()
 async function main() {
-  const password = global.$md5('Qpalzm1.');
+  // 使用全局注册的密码加密函数，替代 MD5
+  const password = await global.$hashPassword('Qpalzm1.');
   const admin = await prisma.user.upsert({
     where: { email: 'admin@gmail.com' },
     update: {
