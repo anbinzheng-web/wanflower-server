@@ -12,6 +12,9 @@ import fs from 'fs';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   
+  // 设置全局前缀
+  app.setGlobalPrefix('api');
+  
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true, // 👈 自动类型转换
@@ -40,7 +43,7 @@ async function bootstrap() {
     customSiteTitle: 'wanflower api documents', // 设置自定义页面标题
     jsonDocumentUrl: 'openapi.json'
   };
-  SwaggerModule.setup('api', app, document, options); // 'api' 是 Swagger UI 的访问路径
+  SwaggerModule.setup('docs', app, document, options); // 'docs' 是 Swagger UI 的访问路径
 
   await app.listen(process.env.PORT || 3000);
 }

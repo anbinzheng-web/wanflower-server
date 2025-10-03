@@ -21,3 +21,6 @@ export class LoginDto {
   @IsString()
   password: string;
 }
+
+// 导出用户管理相关的DTO
+export * from './user-management.dto';
