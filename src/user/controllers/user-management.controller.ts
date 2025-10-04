@@ -35,7 +35,7 @@ import {
   ResetUserPasswordDto,
   UserResponseDto,
 } from '../dto/user-management.dto';
-import { ApiPaginatedResponse, ApiMessageResponse } from 'shared/decorators/api-paginated-response';
+import { ApiPaginatedResponse, ApiMessageResponse } from 'shared/decorators/swagger.decorator';
 
 /**
  * 用户管理控制器

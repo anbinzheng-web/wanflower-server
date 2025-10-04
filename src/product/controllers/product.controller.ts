@@ -22,6 +22,7 @@ import {
   ProductMediaMigrateToCdnDto,
   CategoryListDto, CategoryCreateDto, CategoryUpdateDto
 } from '../dtos';
+import { ApiPaginatedResponse, ApiMessageResponse } from 'shared/decorators/swagger.decorator';
 
 @ApiTags('product')
 @Controller('product')
@@ -37,7 +38,7 @@ export class ProductController {
 
   @Get('list')
   @ApiOperation({ summary: '获取产品列表', description: '支持筛选、排序、分页的产品列表' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取成功' })
+  @ApiPaginatedResponse(ProductListDto)
   async getProductList(@Query() query: ProductListDto) {
     return await this.productService.getProductList(query);
   }
@@ -45,15 +46,14 @@ export class ProductController {
   @Get('detail/:id')
   @ApiOperation({ summary: '获取产品详情' })
   @ApiParam({ name: 'id', description: '产品ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取成功' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '产品不存在' })
+  @ApiMessageResponse(ProductDetailDto)
   async getProductDetail(@Param('id', ParseIntPipe) id: number) {
     return await this.productService.getProductDetail({ id });
   }
 
   @Post('view')
   @ApiOperation({ summary: '增加产品浏览量' })
-  @ApiResponse({ status: HttpStatus.OK, description: '操作成功' })
+  @ApiMessageResponse(ProductViewDto)
   async incrementProductView(@Body() data: ProductViewDto) {
     return await this.productService.incrementProductView(data);
   }
@@ -75,7 +75,7 @@ export class ProductController {
   @Roles(Role.Staff, Role.Admin)
   @ApiBearerAuth()
   @ApiOperation({ summary: '创建产品', description: '需要员工或管理员权限' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: '创建成功' })
+  @ApiMessageResponse(ProductCreateDto)
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '参数错误' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
   async createProduct(@Body() data: ProductCreateDto) {
@@ -87,7 +87,7 @@ export class ProductController {
   @Roles(Role.Staff, Role.Admin)
   @ApiBearerAuth()
   @ApiOperation({ summary: '更新产品', description: '需要员工或管理员权限' })
-  @ApiResponse({ status: HttpStatus.OK, description: '更新成功' })
+  @ApiMessageResponse(ProductUpdateDto)
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '产品不存在' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
   async updateProduct(@Body() data: ProductUpdateDto) {
