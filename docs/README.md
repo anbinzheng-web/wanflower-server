@@ -18,6 +18,7 @@
 ### 🛠️ 开发指南
 - [开发环境搭建](./development/setup.md) - 本地开发环境配置
 - [代码规范](./development/coding-standards.md) - 编码规范和最佳实践
+- [文档编写规范](./development/documentation-standards.md) - 文档编写规范和最佳实践
 - [部署指南](./development/deployment.md) - 生产环境部署
 - [测试指南](./development/testing.md) - 单元测试和集成测试
 
