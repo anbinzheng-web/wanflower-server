@@ -268,3 +268,10 @@ psql $DATABASE_URL < backup_file.sql
 - 2024-01-XX: 添加监控和告警配置
 - 2024-01-XX: 完善故障处理流程
 
+---
+
+**相关文档**:
+- [数据库管理](./database-management.md)
+- [部署指南](../development/deployment.md)
+- [监控和日志](./logging-system.md)
+

@@ -145,3 +145,11 @@ npm run start:dev
 - [Google OAuth2 文档](https://developers.google.com/identity/protocols/oauth2)
 - [Passport Google Strategy](https://github.com/jaredhanson/passport-google-oauth20)
 - [NestJS Passport](https://docs.nestjs.com/recipes/passport)
+
+---
+
+**相关文档**:
+- [认证系统模块](../modules/auth.md)
+- [开发环境搭建](./setup.md)
+- [部署指南](./deployment.md)
+

@@ -1,4 +1,4 @@
-# NestJS Swagger 响应装饰器最佳实践指南
+# Swagger 响应装饰器最佳实践指南
 
 ## 概述
 
@@ -245,3 +245,11 @@ export class PaginatedDto<TData> {
 
 - [NestJS OpenAPI Operations - Advanced Generic ApiResponse](https://docs.nestjs.com/openapi/operations#advanced-generic-apiresponse)
 - [NestJS Swagger Documentation](https://docs.nestjs.com/openapi/introduction)
+
+---
+
+**相关文档**:
+- [代码规范](./coding-standards.md)
+- [API设计规范](../architecture/api-standards.md)
+- [开发环境搭建](./setup.md)
+

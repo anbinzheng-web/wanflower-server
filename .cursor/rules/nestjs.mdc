@@ -2,153 +2,154 @@
 alwaysApply: true
 ---
 
-# Cursor Rules for E-commerce System (NestJS + TypeScript)
+# 电商系统 Cursor 规则 (NestJS + TypeScript)
 
-## General Notes
+## 通用说明
 
-- This system is an **E-commerce platform**, so all naming conventions (modules, entities, services, etc.) should be related to the e-commerce domain (e.g., `Product`, `Order`, `Customer`, `Cart`, `Inventory`, etc.).  
-- **Code must be written in English.**  
-- **All comments must be written in Chinese.**  
-- Each API endpoint must include **Swagger decorators** for documentation.  
-- The ORM used is **Prisma**, and we must follow the **latest best practices** for schema design, migrations, and type-safe queries.  
-- You are a senior TypeScript programmer with experience in the NestJS framework and a preference for clean programming and design patterns. Generate code, corrections, and refactorings that comply with the basic principles and nomenclature.
-
----
-
-## TypeScript General Guidelines
-
-### Basic Principles
-
-- Always declare the type of each variable and function (parameters and return value).  
-- Avoid using `any`.  
-- Create necessary types.  
-- Don't leave blank lines within a function.  
-- One export per file.  
-
-### Nomenclature
-
-- Use PascalCase for classes.  
-- Use camelCase for variables, functions, and methods.  
-- Use kebab-case for file and directory names.  
-- Use UPPERCASE for environment variables.  
-- Avoid magic numbers and define constants.  
-- Start each function with a verb.  
-- Use verbs for boolean variables. Example: `isLoading`, `hasError`, `canDelete`.  
-- Use complete words instead of abbreviations and correct spelling.  
-- Exceptions for standard abbreviations like `API`, `URL`, etc.  
-- Exceptions for well-known abbreviations:  
-  - i, j for loops  
-  - err for errors  
-  - ctx for contexts  
-  - req, res, next for middleware function parameters  
-
-### Functions
-
-- Write short functions with a single purpose. Less than 20 instructions.  
-- Name functions with a verb and something else.  
-- If it returns a boolean, use `isX`, `hasX`, `canX`.  
-- If it doesn't return anything, use `executeX`, `saveX`, etc.  
-- Avoid nesting blocks by:  
-  - Early checks and returns.  
-  - Extraction to utility functions.  
-- Use higher-order functions (`map`, `filter`, `reduce`, etc.) to avoid function nesting.  
-- Use arrow functions for simple functions (less than 3 instructions).  
-- Use named functions for non-simple functions.  
-- Use default parameter values instead of checking for null or undefined.  
-- Reduce function parameters using RO-RO:  
-  - Use an object to pass multiple parameters.  
-  - Use an object to return results.  
-  - Declare necessary types for input arguments and output.  
-- Use a single level of abstraction.  
-
-### Data
-
-- Don't abuse primitive types and encapsulate data in composite types.  
-- Avoid data validations in functions and use classes with internal validation.  
-- Prefer immutability for data.  
-- Use `readonly` for data that doesn't change.  
-- Use `as const` for literals that don't change.  
-
-### Classes
-
-- Follow SOLID principles.  
-- Prefer composition over inheritance.  
-- Declare interfaces to define contracts.  
-- Write small classes with a single purpose:  
-  - Less than 200 instructions.  
-  - Less than 10 public methods.  
-  - Less than 10 properties.  
-
-### Exceptions
-
-- Use exceptions to handle unexpected errors.  
-- If you catch an exception, it should be to:  
-  - Fix an expected problem.  
-  - Add context.  
-  - Otherwise, use a global handler.  
-
-### Testing
-
-- Follow the Arrange-Act-Assert convention for tests.  
-- Name test variables clearly.  
-- Follow the convention: `inputX`, `mockX`, `actualX`, `expectedX`.  
-- Write unit tests for each public function.  
-- Use test doubles to simulate dependencies.  
-- Write acceptance tests for each module.  
-- Follow the Given-When-Then convention.  
+- 本系统是一个**电商平台**，因此所有命名规范（模块、实体、服务等）都应与电商领域相关（如 `Product`、`Order`、`Customer`、`Cart`、`Inventory` 等）。  
+- **代码必须使用英文编写。**  
+- **所有注释必须使用中文编写。**  
+- 每个 API 端点必须包含 **Swagger 装饰器**用于文档生成。  
+- ORM 使用 **Prisma**，必须遵循 **最新最佳实践**进行 schema 设计、迁移和类型安全查询。  
+- 你是一名有 NestJS 框架经验的高级 TypeScript 程序员，偏好简洁的编程和设计模式。生成代码、修正和重构时必须符合基本原则和命名规范。  
 
 ---
 
-## Specific to NestJS
+## TypeScript 通用规范
 
-### Basic Principles
+### 基本原则
 
-- Use modular architecture.  
-- Encapsulate the API in modules:  
-  - One module per main domain/route (e.g., `product`, `order`, `cart`, `customer`).  
-  - One controller for its route.  
-  - Other controllers for secondary routes.  
-  - A `models` folder with data types.  
-  - DTOs validated with `class-validator` for inputs.  
-  - Declare simple types for outputs.  
-  - A `services` module with business logic and persistence.  
-  - One service per entity.  
-- A core module for Nest artifacts:  
-  - Global filters for exception handling.  
-  - Global middlewares for request management.  
-  - Guards for permission management.  
-  - Interceptors for request management.  
-- A shared module for services shared between modules:  
-  - Utilities  
-  - Shared business logic  
+- 始终为每个变量和函数（参数和返回值）声明类型。  
+- 避免使用 `any`。  
+- 创建必要的类型。  
+- 函数内部不要留空行。  
+- 每个文件只导出一个内容。  
+
+### 命名规范
+
+- 类使用 PascalCase。  
+- 变量、函数和方法使用 camelCase。  
+- 文件和目录使用 kebab-case。  
+- 环境变量使用 UPPERCASE。  
+- 避免魔法数字并定义常量。  
+- 函数必须以动词开头。  
+- 布尔变量必须使用动词。例如：`isLoading`、`hasError`、`canDelete`。  
+- 使用完整单词而不是缩写，并拼写正确。  
+- 以下为例外：  
+  - 标准缩写：`API`、`URL` 等。  
+  - 常见缩写：  
+    - i, j 用于循环  
+    - err 用于错误  
+    - ctx 用于上下文  
+    - req, res, next 用于中间件函数参数  
+
+### 函数
+
+- 编写短小的函数，每个函数只做一件事，少于 20 条指令。  
+- 函数命名以动词+其他元素。  
+- 如果返回布尔值，使用 `isX`、`hasX`、`canX`。  
+- 如果没有返回值，使用 `executeX`、`saveX` 等。  
+- 通过以下方式避免嵌套：  
+  - 提前检查并返回。  
+  - 抽取为工具函数。  
+- 使用高阶函数（`map`、`filter`、`reduce` 等）避免函数嵌套。  
+- 简单函数（少于 3 条指令）使用箭头函数。  
+- 非简单函数使用具名函数。  
+- 使用默认参数值，而不是检查 null 或 undefined。  
+- 使用 RO-RO 原则减少函数参数：  
+  - 使用对象传递多个参数。  
+  - 使用对象返回结果。  
+  - 为输入参数和输出声明必要的类型。  
+- 保持单一抽象层次。  
+
+### 数据
+
+- 不要滥用原始类型，用复合类型封装数据。  
+- 避免在函数中做数据校验，使用类内部校验。  
+- 数据优先保持不可变。  
+- 不会变化的数据使用 `readonly`。  
+- 不会变化的字面量使用 `as const`。  
+
+### 类
+
+- 遵循 SOLID 原则。  
+- 优先使用组合而非继承。  
+- 使用接口定义契约。  
+- 编写小而单一用途的类：  
+  - 少于 200 条指令。  
+  - 少于 10 个公共方法。  
+  - 少于 10 个属性。  
+
+### 异常
+
+- 使用异常处理意外错误。  
+- 捕获异常时必须用于：  
+  - 修复预期问题。  
+  - 添加上下文。  
+  - 其他情况使用全局处理器。  
+
+### 测试
+
+- 遵循 Arrange-Act-Assert 规范。  
+- 测试变量命名清晰。  
+- 命名约定：`inputX`、`mockX`、`actualX`、`expectedX`。  
+- 为每个公共函数编写单元测试。  
+- 使用测试替身模拟依赖。  
+- 为每个模块编写验收测试。  
+- 遵循 Given-When-Then 规范。  
+
+---
+
+## NestJS 特定规范
+
+### 基本原则
+
+- 使用模块化架构。  
+- 将 API 封装在模块中：  
+  - 每个主要领域/路由一个模块（如 `product`、`order`、`cart`、`customer`）。  
+  - 每个路由一个控制器。  
+  - 其他控制器用于二级路由。  
+  - `models` 文件夹用于数据类型。  
+  - 输入 DTO 使用 `class-validator` 验证。  
+  - 输出声明简单类型。  
+  - `services` 模块包含业务逻辑和持久化。  
+  - 每个实体一个服务。  
+- 核心模块包含 Nest 工具：  
+  - 全局过滤器处理异常。  
+  - 全局中间件处理请求。  
+  - 守卫管理权限。  
+  - 拦截器管理请求。  
+- shared 模块包含共享服务：  
+  - 工具类  
+  - 共享业务逻辑  
 
 ### ORM (Prisma)
 
-- Use **Prisma ORM** with the latest best practices.  
-- Define database schema in `prisma/schema.prisma`.  
-- Use `prisma migrate` for database migrations.  
-- Use generated Prisma client for type-safe database access.  
-- Avoid writing raw SQL unless absolutely necessary.  
-- Encapsulate all database access inside repositories or services.  
-- Prefer composition and dependency injection for Prisma client usage.  
-- Ensure relations (e.g., `Order` → `Customer`, `Product` → `Category`) are clearly modeled in Prisma schema.  
+- 使用 **Prisma ORM** 遵循最新最佳实践。  
+- 在 `prisma/schema.prisma` 中定义数据库 schema。  
+- 使用 `prisma migrate` 进行数据库迁移。  
+- 使用生成的 Prisma client 进行类型安全数据库访问。  
+- 避免写原生 SQL，除非绝对必要。  
+- 将所有数据库访问封装在仓储或服务中。  
+- 使用组合和依赖注入管理 Prisma client。  
+- 确保关系（如 `Order` → `Customer`、`Product` → `Category`）在 Prisma schema 中清晰建模。  
 
 ### Swagger
 
-- Each controller method (API endpoint) must use **Swagger decorators** (`@ApiTags`, `@ApiOperation`, `@ApiResponse`, etc.) to generate API documentation.  
-- Ensure that DTOs are decorated with `@ApiProperty` for clear schema representation in Swagger UI.
+- 每个控制器方法（API 端点）必须使用 **Swagger 装饰器**（`@ApiTags`、`@ApiOperation` 等）生成 API 文档。  
+- DTO 必须使用 `@ApiProperty` 装饰，以便在 Swagger UI 中清晰展示。  
 
 #### Swagger 响应装饰器最佳实践
 
-- **使用自定义装饰器而非直接使用 @ApiResponse**：
-  - 分页接口：使用 `@ApiPaginatedResponse(ModelClass)`
-  - 消息接口：使用 `@ApiMessageResponse(ModelClass)` 或 `@ApiMessageResponse()`
-  - 避免直接使用 `@ApiResponse({ type: SwaggerApiResponse<T> })`
+- **使用自定义装饰器而非直接使用 @ApiResponse**：  
+  - 分页接口：使用 `@ApiPaginatedResponse(ModelClass)`  
+  - 消息接口：使用 `@ApiMessageResponse(ModelClass)` 或 `@ApiMessageResponse()`  
+  - 避免直接使用 `@ApiResponse({ type: SwaggerApiResponse<T> })`  
 
-- **方法返回类型**：
-  - 分页接口：直接返回 `Promise<PaginatedData<T>>`
-  - 消息接口：直接返回 `Promise<T>` 或 `Promise<{ message: string }>`
-  - 不要返回包装的 `ApiResponse` 结构
+- **方法返回类型**：  
+  - 分页接口：直接返回 `Promise<PaginatedData<T>>`  
+  - 消息接口：直接返回 `Promise<T>` 或 `Promise<{ message: string }>`  
+  - 不要返回包装的 `ApiResponse` 结构  
 
 - **错误示例 vs 正确示例**：
 
@@ -177,20 +178,3 @@ async getUsers(): Promise<PaginatedData<UserDto>> {
   return { records: [], total: 0, page: 1, page_size: 10 };
 }
 ```
-
-- **关键优势**：
-  - 代码简洁：方法直接返回业务数据
-  - 类型安全：TypeScript 类型与 Swagger 文档完全一致
-  - 分离关注点：装饰器负责文档，拦截器负责包装
-  - 易于维护：响应结构变更只需修改装饰器或拦截器
-
-- **参考资源**：
-  - [NestJS OpenAPI Operations](https://docs.nestjs.com/openapi/operations#advanced-generic-apiresponse)
-  - [项目 Swagger 响应指南](./SWAGGER_RESPONSE_GUIDE.md)  
-
-### Testing
-
-- Use the standard Jest framework for testing.  
-- Write tests for each controller and service.  
-- Write end-to-end tests for each API module.  
-- Add an `admin/test` method to each controller as a smoke test.  

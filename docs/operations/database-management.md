@@ -1,19 +1,21 @@
-# 数据库重置指南
+# 数据库管理
 
 ## 概述
 
-本文档详细说明了万花电商系统数据库的重置流程，包括开发环境和生产环境的不同处理方式。
+本文档详细说明了万花电商系统数据库的管理操作，包括重置、迁移、备份、恢复等操作指南。
 
-## 问题背景
+## 数据库重置指南
+
+### 问题背景
 
 在使用 `prisma migrate reset` 时可能遇到以下问题：
 - 影子数据库权限不足
 - 迁移文件缺失
 - 数据库表不存在
 
-## 解决方案
+### 解决方案
 
-### 方法一：使用 db push（推荐用于开发环境）
+#### 方法一：使用 db push（推荐用于开发环境）
 
 当遇到权限问题或迁移文件问题时，使用 `db push` 命令：
 
@@ -25,7 +27,7 @@ pnpm db:push
 pnpm db:push:force
 ```
 
-### 方法二：使用 migrate reset（标准流程）
+#### 方法二：使用 migrate reset（标准流程）
 
 ```bash
 # 开发环境完整重置（包含种子数据）
@@ -177,9 +179,86 @@ pnpm prisma:generate
 pnpm prisma:seed
 ```
 
+## 生产环境数据库指南
+
+### 环境配置
+
+```env
+# 生产环境数据库配置
+DATABASE_URL="postgresql://username:password@localhost:5432/wanflower_prod"
+NODE_ENV=production
+```
+
+### 部署流程
+
+1. **备份现有数据**
+   ```bash
+   pnpm db:backup
+   ```
+
+2. **应用数据库迁移**
+   ```bash
+   pnpm db:migrate:deploy
+   ```
+
+3. **验证数据库状态**
+   ```bash
+   pnpm db:migrate:status
+   ```
+
+4. **运行种子数据**（如果需要）
+   ```bash
+   pnpm prisma:seed
+   ```
+
+### 监控和维护
+
+- 定期检查数据库性能
+- 监控磁盘空间使用
+- 设置数据库备份策略
+- 配置慢查询日志
+
+## 快速数据库命令
+
+### 常用命令速查
+
+```bash
+# 查看数据库状态
+pnpm db:status
+
+# 生成 Prisma Client
+pnpm prisma:generate
+
+# 查看数据库结构
+pnpm prisma db pull
+
+# 重置开发数据库
+pnpm db:reset:dev
+
+# 备份数据库
+pnpm db:backup
+
+# 恢复数据库
+pnpm db:restore
+```
+
+### 开发环境快速重置
+
+```bash
+# 一键重置开发环境
+pnpm db:reset:full && pnpm prisma:generate
+```
+
 ## 更新日志
 
 - 2024-01-XX: 初始版本，解决权限问题和迁移文件缺失问题
 - 2024-01-XX: 添加生产环境安全考虑
 - 2024-01-XX: 完善命令说明和故障排除指南
+
+---
+
+**相关文档**:
+- [数据库设计](../architecture/database.md)
+- [开发环境搭建](../development/setup.md)
+- [部署指南](../development/deployment.md)
 
