@@ -114,8 +114,8 @@ export class PasswordService {
    * @private
    */
   private validatePasswordStrength(password: string): void {
-    const minLength = 8;
-    const maxLength = 128;
+    const minLength = 6;
+    const maxLength = 32;
 
     if (password.length < minLength) {
       throw new Error(`密码长度不能少于${minLength}位`);
@@ -141,9 +141,9 @@ export class PasswordService {
     }
 
     // 检查是否包含至少一个特殊字符（可选，根据业务需求调整）
-    if (!/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)) {
-      throw new Error('密码必须包含至少一个特殊字符');
-    }
+    // if (!/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)) {
+    //   throw new Error('密码必须包含至少一个特殊字符');
+    // }
 
     // 检查常见弱密码
     const commonPasswords = [

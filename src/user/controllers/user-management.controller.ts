@@ -17,9 +17,11 @@ import {
   ApiOperation, 
   ApiResponse, 
   ApiParam, 
-  ApiQuery,
   ApiBearerAuth 
 } from '@nestjs/swagger';
+import { 
+  PaginatedData
+} from 'shared/dto/response.dto';
 import { UserService } from '../services/user.service';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { RolesGuard } from '../../auth/roles.guard';
@@ -32,9 +34,8 @@ import {
   UpdateUserRoleDto,
   ResetUserPasswordDto,
   UserResponseDto,
-  UserListResponseDto
 } from '../dto/user-management.dto';
-import { Role } from '@prisma/client';
+import { ApiPaginatedResponse, ApiMessageResponse } from 'shared/decorators/api-paginated-response';
 
 /**
  * 用户管理控制器
@@ -53,10 +54,10 @@ export class UserManagementController {
   @Get()
   @Roles('admin' as any, 'staff' as any)
   @ApiOperation({ summary: '获取用户列表', description: '支持分页、筛选、搜索功能' })
-  @ApiResponse({ status: 200, description: '获取成功', type: UserListResponseDto })
+  @ApiPaginatedResponse(UserResponseDto)
   @ApiResponse({ status: 401, description: '未授权' })
   @ApiResponse({ status: 403, description: '权限不足' })
-  async getUsers(@Query() query: GetUsersQueryDto): Promise<UserListResponseDto> {
+  async getUsers(@Query() query: GetUsersQueryDto): Promise<PaginatedData<UserResponseDto>> {
     const result = await this.userService.getUsers(query);
     return {
       ...result,
@@ -78,7 +79,7 @@ export class UserManagementController {
   @Roles('admin' as any, 'staff' as any)
   @ApiOperation({ summary: '获取用户详情' })
   @ApiParam({ name: 'id', description: '用户ID', type: 'number' })
-  @ApiResponse({ status: 200, description: '获取成功', type: UserResponseDto })
+  @ApiMessageResponse(UserResponseDto)
   @ApiResponse({ status: 404, description: '用户不存在' })
   @ApiResponse({ status: 401, description: '未授权' })
   @ApiResponse({ status: 403, description: '权限不足' })
@@ -100,7 +101,7 @@ export class UserManagementController {
   @Post()
   @Roles('admin' as any)
   @ApiOperation({ summary: '创建用户', description: '仅管理员可创建用户' })
-  @ApiResponse({ status: 201, description: '创建成功', type: UserResponseDto })
+  @ApiMessageResponse(UserResponseDto)
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 401, description: '未授权' })
   @ApiResponse({ status: 403, description: '权限不足' })
@@ -123,7 +124,7 @@ export class UserManagementController {
   @Roles('admin' as any)
   @ApiOperation({ summary: '更新用户信息', description: '仅管理员可更新用户信息' })
   @ApiParam({ name: 'id', description: '用户ID', type: 'number' })
-  @ApiResponse({ status: 200, description: '更新成功', type: UserResponseDto })
+  @ApiMessageResponse(UserResponseDto)
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 404, description: '用户不存在' })
   @ApiResponse({ status: 401, description: '未授权' })
@@ -151,7 +152,7 @@ export class UserManagementController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: '删除用户', description: '仅管理员可删除用户' })
   @ApiParam({ name: 'id', description: '用户ID', type: 'number' })
-  @ApiResponse({ status: 204, description: '删除成功' })
+  @ApiMessageResponse()
   @ApiResponse({ status: 404, description: '用户不存在' })
   @ApiResponse({ status: 401, description: '未授权' })
   @ApiResponse({ status: 403, description: '权限不足' })
@@ -166,7 +167,7 @@ export class UserManagementController {
   @Roles('admin' as any)
   @ApiOperation({ summary: '更新用户状态', description: '激活或禁用用户账户' })
   @ApiParam({ name: 'id', description: '用户ID', type: 'number' })
-  @ApiResponse({ status: 200, description: '更新成功' })
+  @ApiMessageResponse()
   @ApiResponse({ status: 404, description: '用户不存在' })
   @ApiResponse({ status: 401, description: '未授权' })
   @ApiResponse({ status: 403, description: '权限不足' })
@@ -188,7 +189,7 @@ export class UserManagementController {
   @Roles('admin' as any)
   @ApiOperation({ summary: '更新用户角色', description: '修改用户角色权限' })
   @ApiParam({ name: 'id', description: '用户ID', type: 'number' })
-  @ApiResponse({ status: 200, description: '更新成功' })
+  @ApiMessageResponse()
   @ApiResponse({ status: 404, description: '用户不存在' })
   @ApiResponse({ status: 401, description: '未授权' })
   @ApiResponse({ status: 403, description: '权限不足' })
@@ -210,7 +211,7 @@ export class UserManagementController {
   @Roles('admin' as any)
   @ApiOperation({ summary: '重置用户密码', description: '管理员重置用户密码' })
   @ApiParam({ name: 'id', description: '用户ID', type: 'number' })
-  @ApiResponse({ status: 200, description: '重置成功' })
+  @ApiMessageResponse()
   @ApiResponse({ status: 404, description: '用户不存在' })
   @ApiResponse({ status: 401, description: '未授权' })
   @ApiResponse({ status: 403, description: '权限不足' })
@@ -232,72 +233,12 @@ export class UserManagementController {
   @Roles('admin' as any)
   @ApiOperation({ summary: '验证用户邮箱', description: '管理员手动验证用户邮箱' })
   @ApiParam({ name: 'id', description: '用户ID', type: 'number' })
-  @ApiResponse({ status: 200, description: '验证成功' })
+  @ApiMessageResponse()
   @ApiResponse({ status: 404, description: '用户不存在' })
   @ApiResponse({ status: 401, description: '未授权' })
   @ApiResponse({ status: 403, description: '权限不足' })
   async verifyUserEmail(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
     await this.userService.verifyUserEmail(id);
     return { message: '用户邮箱已验证' };
-  }
-
-  /**
-   * 获取用户统计信息
-   */
-  @Get('stats/overview')
-  @Roles('admin' as any, 'staff' as any)
-  @ApiOperation({ summary: '获取用户统计信息', description: '获取用户总数、角色分布等统计信息' })
-  @ApiResponse({ status: 200, description: '获取成功' })
-  @ApiResponse({ status: 401, description: '未授权' })
-  @ApiResponse({ status: 403, description: '权限不足' })
-  async getUserStats(): Promise<{
-    totalUsers: number;
-    activeUsers: number;
-    verifiedUsers: number;
-    roleDistribution: { role: string; count: number }[];
-    recentRegistrations: number;
-  }> {
-    const [
-      totalUsers,
-      activeUsers,
-      verifiedUsers,
-      roleStats,
-      recentRegistrations
-    ] = await Promise.all([
-      this.userService.getUsers({ page_size: 1 }).then(result => result.total),
-      this.userService.getUsers({ is_active: true, page_size: 1 }).then(result => result.total),
-      this.userService.getUsers({ is_verified: true, page_size: 1 }).then(result => result.total),
-      this.userService.getUsers({ page_size: 1 }).then(async () => {
-        const [userCount, staffCount, adminCount] = await Promise.all([
-          this.userService.getUsers({ role: 'user', page_size: 1 }).then(result => result.total),
-          this.userService.getUsers({ role: 'staff', page_size: 1 }).then(result => result.total),
-          this.userService.getUsers({ role: 'admin', page_size: 1 }).then(result => result.total),
-        ]);
-        return [
-          { role: 'user', count: userCount },
-          { role: 'staff', count: staffCount },
-          { role: 'admin', count: adminCount },
-        ];
-      }),
-      this.userService.getUsers({ 
-        page_size: 1,
-        sortBy: 'created_at',
-        sortOrder: 'desc'
-      }).then(result => {
-        // 计算最近7天注册的用户数
-        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        return result.records.filter(user => 
-          new Date(user.created_at) >= sevenDaysAgo
-        ).length;
-      })
-    ]);
-
-    return {
-      totalUsers,
-      activeUsers,
-      verifiedUsers,
-      roleDistribution: await roleStats,
-      recentRegistrations,
-    };
   }
 }

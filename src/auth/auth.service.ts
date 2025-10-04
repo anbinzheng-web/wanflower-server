@@ -166,8 +166,8 @@ export class AuthService {
         });
       }
 
-      // 更新用户登录信息
-      await this.userService.updateLastLogin(user.id);
+      // 更新用户活跃时间
+      await this.userService.updateLastActivity(user.id);
 
       return {
         access_token: accessToken,
@@ -194,6 +194,9 @@ export class AuthService {
     try {
       // 验证Refresh Token
       const tokenRecord = await this.refreshTokenService.validateRefreshToken(refreshToken);
+      
+      // 更新用户活跃时间（refresh token也算活跃）
+      await this.userService.updateLastActivity((tokenRecord as any).user.id);
       
       // 生成新的Access Token
       const payload = { 

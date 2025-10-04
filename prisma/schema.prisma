@@ -425,8 +425,7 @@ model User {
   // 账户状态
   is_active     Boolean   @default(true)
   is_verified  Boolean   @default(false)
-  last_login   DateTime?
-  login_count  Int       @default(0)  // 登录次数统计
+  last_login   DateTime?  // 最后登录/活跃时间（包括refresh token）
   
   // 第三方登录信息
   oauth_providers OAuthProvider[]

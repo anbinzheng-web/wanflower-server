@@ -9,11 +9,18 @@
     "start:dev": "nest start --watch",
     "start:prod": "node .",
     "prisma:generate": "prisma generate",
-    "prisma:dev:migrate": "prisma migrate dev --name init",
-    "prisma:prod:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "prisma:reset": "prisma migrate reset",
-    "prisma:seed": "npx prisma db seed"
+    "prisma:seed": "npx prisma db seed",
+    "db:push": "prisma db push",
+    "db:push:force": "prisma db push --force-reset",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:status": "prisma migrate status",
+    "db:reset:dev": "prisma migrate reset --force",
+    "db:reset:prod": "prisma migrate reset --force --skip-seed",
+    "db:reset:full": "prisma migrate reset --force && pnpm prisma:seed",
+    "db:backup": "pg_dump $DATABASE_URL > backup_$(date +%Y%m%d_%H%M%S).sql",
+    "db:restore": "echo 'Usage: psql $DATABASE_URL < backup_file.sql'"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -35,6 +42,7 @@
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "cookie-parser": "^1.4.7",
     "express": "^5.1.0",
     "nestjs-pino": "^4.4.0",
     "passport-google-oauth20": "^2.0.0",
@@ -53,6 +61,7 @@
     "@nestjs/schematics": "^11.0.7",
     "@nestjs/testing": "^11.1.6",
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.9",
     "@types/jest": "^30.0.0",
     "@types/negotiator": "^0.6.4",
     "@types/node": "^24.3.3",

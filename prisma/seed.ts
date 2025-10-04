@@ -19,7 +19,6 @@ async function main() {
       is_active: true,
       first_name: 'Admin',
       last_name: 'User',
-      login_count: 0,
     },
     create: {
       email: 'admin@gmail.com',
@@ -29,7 +28,6 @@ async function main() {
       is_active: true,
       first_name: 'Admin',
       last_name: 'User',
-      login_count: 0,
     },
   })
 
@@ -42,7 +40,6 @@ async function main() {
       is_active: true,
       first_name: 'Test',
       last_name: 'User',
-      login_count: 0,
     },
     create: {
       email: 'user@gmail.com',
@@ -52,7 +49,6 @@ async function main() {
       is_active: true,
       first_name: 'Test',
       last_name: 'User',
-      login_count: 0,
     },
   })
 
@@ -65,7 +61,6 @@ async function main() {
       is_active: true,
       first_name: 'Staff',
       last_name: 'User',
-      login_count: 0,
     },
     create: {
       email: 'staff@gmail.com',
@@ -75,7 +70,6 @@ async function main() {
       is_active: true,
       first_name: 'Staff',
       last_name: 'User',
-      login_count: 0,
     },
   })
 
@@ -88,7 +82,6 @@ async function main() {
       is_active: true,
       first_name: 'Unverified',
       last_name: 'User',
-      login_count: 0,
     },
     create: {
       email: 'unverified@gmail.com',
@@ -98,7 +91,6 @@ async function main() {
       is_active: true,
       first_name: 'Unverified',
       last_name: 'User',
-      login_count: 0,
     },
   })
 
@@ -111,7 +103,6 @@ async function main() {
       is_active: false,
       first_name: 'Disabled',
       last_name: 'User',
-      login_count: 0,
     },
     create: {
       email: 'disabled@gmail.com',
@@ -121,7 +112,6 @@ async function main() {
       is_active: false,
       first_name: 'Disabled',
       last_name: 'User',
-      login_count: 0,
     },
   })
 

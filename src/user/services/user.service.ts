@@ -70,10 +70,6 @@ export class UserService {
 
       return user;
     } catch (error) {
-      this.customLogger.logError(error, {
-        module: 'UserService',
-        action: 'createUser',
-      }, { email });
       throw error;
     }
   }
@@ -115,10 +111,6 @@ export class UserService {
 
       return updatedUser;
     } catch (error) {
-      this.customLogger.logError(error, {
-        module: 'UserService',
-        action: 'setRole',
-      }, { userId, role });
       throw error;
     }
   }
@@ -148,37 +140,28 @@ export class UserService {
 
       return updatedUser;
     } catch (error) {
-      this.customLogger.logError(error, {
-        module: 'UserService',
-        action: 'updatePassword',
-      }, { userId });
       throw error;
     }
   }
 
   /**
-   * 更新用户最后登录时间
+   * 更新用户最后活跃时间（包括登录和refresh token）
    * @param userId 用户ID
    */
-  async updateLastLogin(userId: number) {
+  async updateLastActivity(userId: number) {
     try {
       await this.prisma.user.update({
         where: { id: userId },
         data: { 
           last_login: new Date(),
-          login_count: { increment: 1 },
         },
       });
 
-      this.customLogger.info('更新用户登录时间', { userId }, {
+      this.customLogger.info('更新用户活跃时间', { userId }, {
         module: 'UserService',
-        action: 'updateLastLogin',
+        action: 'updateLastActivity',
       });
     } catch (error) {
-      this.customLogger.logError(error, {
-        module: 'UserService',
-        action: 'updateLastLogin',
-      }, { userId });
       throw error;
     }
   }
@@ -201,10 +184,6 @@ export class UserService {
 
       return updatedUser;
     } catch (error) {
-      this.customLogger.logError(error, {
-        module: 'UserService',
-        action: 'verifyUserEmail',
-      }, { userId });
       throw error;
     }
   }
@@ -278,7 +257,6 @@ export class UserService {
             avatar_url: true,
             is_verified: true,
             is_active: true,
-            login_count: true,
             last_login: true,
             created_at: true,
             updated_at: true,
@@ -289,16 +267,6 @@ export class UserService {
 
       const totalPages = Math.ceil(total / page_size);
 
-      this.customLogger.info('获取用户列表', { 
-        page, 
-        page_size, 
-        total, 
-        totalPages 
-      }, {
-        module: 'UserService',
-        action: 'getUsers',
-      });
-
       return {
         records: users,
         total,
@@ -307,10 +275,6 @@ export class UserService {
         totalPages,
       };
     } catch (error) {
-      this.customLogger.logError(error, {
-        module: 'UserService',
-        action: 'getUsers',
-      }, query);
       throw error;
     }
   }
@@ -336,7 +300,6 @@ export class UserService {
           gender: true,
           is_verified: true,
           is_active: true,
-          login_count: true,
           last_login: true,
           created_at: true,
           updated_at: true,
@@ -361,17 +324,8 @@ export class UserService {
         throw new BadRequestException('用户不存在');
       }
 
-      this.customLogger.info('获取用户详情', { userId: id }, {
-        module: 'UserService',
-        action: 'getUserById',
-      });
-
       return user;
     } catch (error) {
-      this.customLogger.logError(error, {
-        module: 'UserService',
-        action: 'getUserById',
-      }, { id });
       throw error;
     }
   }
@@ -425,7 +379,6 @@ export class UserService {
           avatar_url: true,
           is_verified: true,
           is_active: true,
-          login_count: true,
           last_login: true,
           created_at: true,
           updated_at: true,
@@ -443,20 +396,8 @@ export class UserService {
         },
       });
 
-      this.customLogger.info('管理员创建用户', { 
-        userId: user.id, 
-        email: user.email 
-      }, {
-        module: 'UserService',
-        action: 'createUserByAdmin',
-      });
-
       return user;
     } catch (error) {
-      this.customLogger.logError(error, {
-        module: 'UserService',
-        action: 'createUserByAdmin',
-      }, userData);
       throw error;
     }
   }
@@ -515,7 +456,6 @@ export class UserService {
           avatar_url: true,
           is_verified: true,
           is_active: true,
-          login_count: true,
           last_login: true,
           created_at: true,
           updated_at: true,
@@ -544,20 +484,8 @@ export class UserService {
         },
       });
 
-      this.customLogger.info('管理员更新用户', { 
-        userId: id, 
-        email: updatedUser.email 
-      }, {
-        module: 'UserService',
-        action: 'updateUserByAdmin',
-      });
-
       return updatedUser;
     } catch (error) {
-      this.customLogger.logError(error, {
-        module: 'UserService',
-        action: 'updateUserByAdmin',
-      }, { id, userData });
       throw error;
     }
   }
@@ -592,19 +520,7 @@ export class UserService {
           action: 'deleteUserByAdmin',
         },
       });
-
-      this.customLogger.info('管理员删除用户', { 
-        userId: id, 
-        email: existingUser.email 
-      }, {
-        module: 'UserService',
-        action: 'deleteUserByAdmin',
-      });
     } catch (error) {
-      this.customLogger.logError(error, {
-        module: 'UserService',
-        action: 'deleteUserByAdmin',
-      }, { id });
       throw error;
     }
   }
@@ -639,20 +555,8 @@ export class UserService {
         },
       });
 
-      this.customLogger.info('更新用户状态', { 
-        userId: id, 
-        isActive 
-      }, {
-        module: 'UserService',
-        action: 'updateUserStatus',
-      });
-
       return updatedUser;
     } catch (error) {
-      this.customLogger.logError(error, {
-        module: 'UserService',
-        action: 'updateUserStatus',
-      }, { id, isActive });
       throw error;
     }
   }
@@ -680,21 +584,8 @@ export class UserService {
       this.customLogger.logSecurity('password_reset_by_admin', id.toString(), undefined, {
         timestamp: new Date().toISOString(),
       });
-
-      this.customLogger.info('管理员重置用户密码', { 
-        userId: id, 
-        email: updatedUser.email 
-      }, {
-        module: 'UserService',
-        action: 'resetUserPassword',
-      });
-
       return updatedUser;
     } catch (error) {
-      this.customLogger.logError(error, {
-        module: 'UserService',
-        action: 'resetUserPassword',
-      }, { id });
       throw error;
     }
   }

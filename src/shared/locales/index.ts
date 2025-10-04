@@ -7,7 +7,5 @@ export const langMap = {
 }
 
 export const t = (key: string, language: string): string => {
-  console.log('t', key, language)
-  console.log(langMap)
   return langMap[language]?.[key] || key
 }

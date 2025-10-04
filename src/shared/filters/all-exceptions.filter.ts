@@ -26,8 +26,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // 获取请求信息用于日志记录
     const requestId = request.id || 'unknown';
-    const { method, url, ip, headers } = request;
-    const userAgent = headers['user-agent'] || 'unknown';
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
@@ -44,33 +42,43 @@ export class AllExceptionsFilter implements ExceptionFilter {
           message = r.message || r.error || message;
         }
       }
+      
+      // 根据 HTTP 状态码设置错误代码
+      if (status >= 400 && status < 500) {
+        code = status; // 客户端错误使用 HTTP 状态码
+      } else if (status >= 500) {
+        code = 5000; // 服务器错误
+      }
+    } else {
+      // 非 HTTP 异常，设置服务器错误
+      code = 5000;
+      status = HttpStatus.INTERNAL_SERVER_ERROR;
+      message = exception instanceof Error ? exception.message : 'Internal server error';
     }
 
-    // 结构化错误日志记录
+    // 简化的错误日志记录
     const errorLog = {
       requestId,
-      method,
-      url,
-      ip,
-      userAgent,
-      statusCode: status,
-      errorCode: code,
-      errorMessage: message,
-      exception: {
-        name: exception instanceof Error ? exception.name : 'Unknown',
-        message: exception instanceof Error ? exception.message : String(exception),
-        stack: exception instanceof Error ? exception.stack : undefined,
+      error: exception instanceof Error ? {
+        name: exception.name,
+        code: code,
+        message: exception.message,
+        stack: exception.stack,
+      } : {
+        name: 'Unknown',
+        code: code,
+        message: String(exception),
       },
       timestamp: new Date().toISOString(),
     };
 
-    // 根据错误级别记录不同级别的日志
+    // 根据错误级别记录日志
     if (status >= 500) {
-      this.logger.error(errorLog, `🔥 服务器内部错误 - ${status}`);
+      this.logger.error(errorLog, `🔥 服务器错误 - ${status} - ${message}`);
     } else if (status >= 400) {
-      this.logger.warn(errorLog, `⚠️ 客户端错误 - ${status}`);
+      this.logger.warn(errorLog, `⚠️ 客户端错误 - ${status} - ${message}`);
     } else {
-      this.logger.info(errorLog, `ℹ️ 异常处理 - ${status}`);
+      this.logger.info(errorLog, `ℹ️ 异常处理 - ${status} - ${message}`);
     }
 
     // 返回统一格式的错误响应

@@ -209,9 +209,6 @@ export class UserResponseDto {
   @ApiProperty({ description: '是否激活', example: true })
   is_active: boolean;
 
-  @ApiProperty({ description: '登录次数', example: 5 })
-  login_count: number;
-
   @ApiPropertyOptional({ description: '最后登录时间', example: '2024-01-15T10:30:00Z' })
   last_login?: Date;
 

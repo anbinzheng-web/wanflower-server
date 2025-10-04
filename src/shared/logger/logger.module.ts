@@ -21,6 +21,8 @@ import * as path from 'path';
         return {
           pinoHttp: {
             level: logLevel,
+            // 禁用 Pino 的默认 HTTP 日志记录，使用我们的自定义拦截器
+            autoLogging: false,
             // 开发环境使用 pino-pretty，生产环境使用 JSON 格式
             transport: !isProduction
               ? {
@@ -29,7 +31,6 @@ import * as path from 'path';
                     colorize: true,
                     translateTime: 'yyyy-mm-dd HH:MM:ss',
                     ignore: 'pid,hostname',
-                    messageFormat: '{levelLabel} - {msg}',
                     levelFirst: true,
                   },
                 }
@@ -61,24 +62,15 @@ import * as path from 'path';
                   method: req.method,
                   url: req.url,
                   remoteAddress: req.remoteAddress,
-                  remotePort: req.remotePort,
-                  userAgent: req.headers['user-agent'],
-                  // 不记录敏感的 headers
-                  headers: {
-                    'content-type': req.headers['content-type'],
-                    'accept': req.headers['accept'],
-                    'accept-language': req.headers['accept-language'],
-                  },
+                  statusCode: req.statusCode,
+                  headers: req.headers,
                 };
               },
               res(res) {
                 return {
                   statusCode: res.statusCode,
                   statusMessage: res.statusMessage,
-                  headers: {
-                    'content-type': res.getHeader ? res.getHeader('content-type') : res.headers?.['content-type'],
-                    'content-length': res.getHeader ? res.getHeader('content-length') : res.headers?.['content-length'],
-                  },
+                  headers: res.headers,
                 };
               },
               err(err) {

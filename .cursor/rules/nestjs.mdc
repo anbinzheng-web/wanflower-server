@@ -136,7 +136,57 @@ alwaysApply: true
 ### Swagger
 
 - Each controller method (API endpoint) must use **Swagger decorators** (`@ApiTags`, `@ApiOperation`, `@ApiResponse`, etc.) to generate API documentation.  
-- Ensure that DTOs are decorated with `@ApiProperty` for clear schema representation in Swagger UI.  
+- Ensure that DTOs are decorated with `@ApiProperty` for clear schema representation in Swagger UI.
+
+#### Swagger 响应装饰器最佳实践
+
+- **使用自定义装饰器而非直接使用 @ApiResponse**：
+  - 分页接口：使用 `@ApiPaginatedResponse(ModelClass)`
+  - 消息接口：使用 `@ApiMessageResponse(ModelClass)` 或 `@ApiMessageResponse()`
+  - 避免直接使用 `@ApiResponse({ type: SwaggerApiResponse<T> })`
+
+- **方法返回类型**：
+  - 分页接口：直接返回 `Promise<PaginatedData<T>>`
+  - 消息接口：直接返回 `Promise<T>` 或 `Promise<{ message: string }>`
+  - 不要返回包装的 `ApiResponse` 结构
+
+- **错误示例 vs 正确示例**：
+
+```typescript
+// ❌ 错误：直接使用 @ApiResponse
+@ApiResponse({ status: 200, type: SwaggerApiResponse<UserDto> })
+async getUser(): Promise<SwaggerApiResponse<UserDto>> {
+  return { code: 0, data: user, message: 'success' };
+}
+
+// ✅ 正确：使用自定义装饰器
+@ApiMessageResponse(UserDto)
+async getUser(): Promise<UserDto> {
+  return user;
+}
+
+// ❌ 错误：分页接口使用错误的装饰器
+@ApiResponse({ status: 200, type: SwaggerPaginatedResponse<UserDto> })
+async getUsers(): Promise<SwaggerPaginatedResponse<UserDto>> {
+  return { code: 0, data: { records: [], total: 0, page: 1, page_size: 10 }, message: 'success' };
+}
+
+// ✅ 正确：使用分页装饰器
+@ApiPaginatedResponse(UserDto)
+async getUsers(): Promise<PaginatedData<UserDto>> {
+  return { records: [], total: 0, page: 1, page_size: 10 };
+}
+```
+
+- **关键优势**：
+  - 代码简洁：方法直接返回业务数据
+  - 类型安全：TypeScript 类型与 Swagger 文档完全一致
+  - 分离关注点：装饰器负责文档，拦截器负责包装
+  - 易于维护：响应结构变更只需修改装饰器或拦截器
+
+- **参考资源**：
+  - [NestJS OpenAPI Operations](https://docs.nestjs.com/openapi/operations#advanced-generic-apiresponse)
+  - [项目 Swagger 响应指南](./SWAGGER_RESPONSE_GUIDE.md)  
 
 ### Testing
 

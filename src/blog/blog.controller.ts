@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Query, Param, Put, Delete } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { SwaggerApiResponse as ApiResponseWrapper, SwaggerPaginatedResponse } from 'shared/dto/response.dto';
 import { BlogService } from './blog.service';
 import { 
   BlogCreateDto, 
@@ -26,7 +27,7 @@ export class BlogController {
 
   @Get('list')
   @ApiOperation({ summary: '获取博客列表' })
-  @ApiResponse({ status: 200, description: '获取博客列表成功' })
+  @ApiResponse({ status: 200, description: '获取博客列表成功', type: SwaggerPaginatedResponse })
   async list(@Query() query: BlogListDto) {
     return this.blogService.findMany(query);
   }

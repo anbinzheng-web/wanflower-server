@@ -8,9 +8,13 @@ import { AllExceptionsFilter } from 'shared/filters/all-exceptions.filter';
 import { registerGlobalProperties } from './globalProperties';
 import path from 'path';
 import fs from 'fs';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  
+  // 配置 cookie 解析中间件
+  app.use(cookieParser());
   
   // 设置全局前缀
   app.setGlobalPrefix('api');
