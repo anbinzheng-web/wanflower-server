@@ -557,4 +557,100 @@ export class ProductService {
       where: { id }
     });
   }
+
+  // ================================
+  // 产品属性管理相关方法
+  // ================================
+
+  /**
+   * 获取产品属性列表
+   */
+  async getProductAttributes(productId: number) {
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, deleted_at: null }
+    });
+
+    if (!product) {
+      throw new BadRequestException('产品不存在');
+    }
+
+    return await this.prisma.productAttribute.findMany({
+      where: { product_id: productId },
+      orderBy: { sort_order: 'asc' }
+    });
+  }
+
+  /**
+   * 创建产品属性
+   */
+  async createProductAttribute(data: any) {
+    const { product_id, ...attributeData } = data;
+
+    // 检查产品是否存在
+    const product = await this.prisma.product.findFirst({
+      where: { id: product_id, deleted_at: null }
+    });
+
+    if (!product) {
+      throw new BadRequestException('产品不存在');
+    }
+
+    return await this.prisma.productAttribute.create({
+      data: {
+        product_id,
+        ...attributeData
+      }
+    });
+  }
+
+  /**
+   * 更新产品属性
+   */
+  async updateProductAttribute(data: any) {
+    const { id, ...updateData } = data;
+
+    // 检查属性是否存在
+    const attribute = await this.prisma.productAttribute.findFirst({
+      where: { id },
+      include: { product: true }
+    });
+
+    if (!attribute) {
+      throw new BadRequestException('属性不存在');
+    }
+
+    // 检查产品是否被删除
+    if (attribute.product.deleted_at) {
+      throw new BadRequestException('产品已删除');
+    }
+
+    return await this.prisma.productAttribute.update({
+      where: { id },
+      data: updateData
+    });
+  }
+
+  /**
+   * 删除产品属性
+   */
+  async deleteProductAttribute(id: number) {
+    // 检查属性是否存在
+    const attribute = await this.prisma.productAttribute.findFirst({
+      where: { id },
+      include: { product: true }
+    });
+
+    if (!attribute) {
+      throw new BadRequestException('属性不存在');
+    }
+
+    // 检查产品是否被删除
+    if (attribute.product.deleted_at) {
+      throw new BadRequestException('产品已删除');
+    }
+
+    return await this.prisma.productAttribute.delete({
+      where: { id }
+    });
+  }
 }

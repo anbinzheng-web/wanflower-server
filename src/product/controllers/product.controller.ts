@@ -20,7 +20,8 @@ import {
   ProductViewDto, ProductBatchDeleteDto, ProductBatchUpdateStatusDto,
   ProductMediaUploadDto, ProductMediaUpdateDto, ProductMediaDeleteDto,
   ProductMediaMigrateToCdnDto,
-  CategoryListDto, CategoryCreateDto, CategoryUpdateDto
+  CategoryListDto, CategoryCreateDto, CategoryUpdateDto,
+  ProductAttributeCreateDto, ProductAttributeUpdateDto, ProductAttributeListDto, ProductAttributeDeleteDto
 } from '../dtos';
 import { ApiPaginatedResponse, ApiMessageResponse } from 'shared/decorators/swagger.decorator';
 
@@ -267,5 +268,58 @@ export class ProductController {
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
   async deleteCategory(@Param('id', ParseIntPipe) id: number) {
     return await this.productService.deleteCategory(id);
+  }
+
+  // ================================
+  // 产品属性管理接口（需要权限）
+  // ================================
+
+  @Get('attributes')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '获取产品属性列表', description: '需要员工或管理员权限' })
+  @ApiMessageResponse(Object)
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '产品不存在' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async getProductAttributes(@Query() query: ProductAttributeListDto) {
+    return await this.productService.getProductAttributes(query.product_id);
+  }
+
+  @Post('attribute/create')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '创建产品属性', description: '需要员工或管理员权限' })
+  @ApiMessageResponse(Object)
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '产品不存在' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async createProductAttribute(@Body() data: ProductAttributeCreateDto) {
+    return await this.productService.createProductAttribute(data);
+  }
+
+  @Put('attribute/update')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '更新产品属性', description: '需要员工或管理员权限' })
+  @ApiMessageResponse(Object)
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '属性不存在或产品已删除' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async updateProductAttribute(@Body() data: ProductAttributeUpdateDto) {
+    return await this.productService.updateProductAttribute(data);
+  }
+
+  @Delete('attribute/delete/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '删除产品属性', description: '需要员工或管理员权限' })
+  @ApiParam({ name: 'id', description: '属性ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: '删除成功' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '属性不存在或产品已删除' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
+  async deleteProductAttribute(@Param('id', ParseIntPipe) id: number) {
+    return await this.productService.deleteProductAttribute(id);
   }
 }

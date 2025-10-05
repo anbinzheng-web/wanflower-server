@@ -6,7 +6,7 @@ import { PaginatedDto, MessageDto } from 'shared/dto/response.dto';
 type Constructor = new (...args: any[]) => any;
 
 export const ApiPaginatedResponse = <TModel extends Constructor>(
-  model: TModel,
+  model: TModel
 ) => {
   return applyDecorators(
     ApiExtraModels(PaginatedDto, model),
@@ -16,9 +16,19 @@ export const ApiPaginatedResponse = <TModel extends Constructor>(
           { $ref: getSchemaPath(PaginatedDto) },
           {
             properties: {
-              records: {
-                type: 'array',
-                items: { $ref: getSchemaPath(model) },
+              code: { type: 'number', example: 0 },
+              message: { type: 'string', example: '请求成功' },
+              data: {
+                type: 'object',
+                properties: {
+                  records: {
+                    type: 'array',
+                    items: { $ref: getSchemaPath(model) },
+                  },
+                  total: { type: 'number' },
+                  page: { type: 'number' },
+                  page_size: { type: 'number' },
+                },
               },
             },
           },

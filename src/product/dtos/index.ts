@@ -245,6 +245,70 @@ export class ProductUpdateDto extends PartialType(ProductCreateDto) {
 }
 
 // ================================
+// 产品属性管理相关 DTO
+// ================================
+
+export class ProductAttributeCreateDto {
+  @ApiProperty({ description: '产品ID' })
+  @IsInt()
+  @Type(() => Number)
+  product_id: number;
+
+  @ApiProperty({ description: '属性名称' })
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @ApiProperty({ description: '属性值' })
+  @IsNotEmpty()
+  @IsString()
+  value: string;
+
+  @ApiPropertyOptional({ description: '排序权重', default: 0 })
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  sort_order?: number;
+}
+
+export class ProductAttributeUpdateDto {
+  @ApiProperty({ description: '属性ID' })
+  @IsInt()
+  @Type(() => Number)
+  id: number;
+
+  @ApiPropertyOptional({ description: '属性名称' })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiPropertyOptional({ description: '属性值' })
+  @IsOptional()
+  @IsString()
+  value?: string;
+
+  @ApiPropertyOptional({ description: '排序权重' })
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  sort_order?: number;
+}
+
+export class ProductAttributeListDto extends PageDto {
+  @ApiProperty({ description: '产品ID' })
+  @IsInt()
+  @Type(() => Number)
+  product_id: number;
+}
+
+export class ProductAttributeDeleteDto {
+  @ApiProperty({ description: '属性ID' })
+  @IsInt()
+  @Type(() => Number)
+  id: number;
+}
+
+// ================================
 // 媒体文件相关 DTO
 // ================================
 

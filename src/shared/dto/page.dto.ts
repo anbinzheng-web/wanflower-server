@@ -1,8 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsInt, IsOptional, Min, IsIn, IsEnum, IsNumber, IsNotEmpty } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
-import { ProductStatus } from '@prisma/client';
-import { PartialType } from '@nestjs/mapped-types';
 
 export class PageDto {
   @ApiPropertyOptional({ description: '页码', default: 1 })
