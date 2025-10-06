@@ -110,6 +110,9 @@ export class OrderService {
     // 生成订单号
     const order_number = this.generateOrderNumber();
 
+    // 计算支付截止时间（30分钟后）
+    const payment_deadline = new Date(Date.now() + 30 * 60 * 1000);
+
     // 创建订单
     const order = await this.prisma.order.create({
       data: {
@@ -126,6 +129,7 @@ export class OrderService {
         shipping_method,
         customer_notes,
         payment_status: PaymentStatus.PENDING,
+        payment_deadline,
         items: {
           create: orderItems
         }

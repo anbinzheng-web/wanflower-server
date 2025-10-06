@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { SharedModule } from './shared/shared.module';
 import { ProductModule } from './product/product.module';
 import { ReviewModule } from './review/review.module';
@@ -19,6 +20,7 @@ import { AllExceptionsFilter } from './shared/filters/all-exceptions.filter';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     LoggerModule,
     ProductModule,
     ReviewModule,

@@ -126,6 +126,7 @@ export interface OrderWithDetails {
   payment_status: PaymentStatus;
   payment_id?: string;
   paid_at?: Date;
+  payment_deadline?: Date;
   shipping_method?: string;
   tracking_number?: string;
   shipped_at?: Date;

@@ -152,6 +152,7 @@ model Order {
   payment_status  PaymentStatus @default(PENDING)
   payment_id      String?       @db.VarChar(100) // 第三方支付ID
   paid_at         DateTime?     // 支付时间
+  payment_deadline DateTime?    // 支付截止时间（30分钟）
   
   // 物流信息（预留接口）
   shipping_method String?       @db.VarChar(50)  // 物流方式

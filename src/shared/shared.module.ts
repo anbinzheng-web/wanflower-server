@@ -13,6 +13,7 @@ import { RedisService } from './services/redis.service';
 import { CacheService } from './services/cache.service';
 import { RedisHealthService } from './services/redis-health.service';
 import { RedisHealthController } from './controllers/redis-health.controller';
+import { SchedulerService } from './services/scheduler.service';
 
 @Global()
 @Module({
@@ -29,6 +30,7 @@ import { RedisHealthController } from './controllers/redis-health.controller';
     RedisService,
     CacheService,
     RedisHealthService,
+    SchedulerService,
     {
       provide: 'STORAGE_SERVICE',
       useClass: process.env.STORAGE_DRIVER === 'oss'
@@ -48,6 +50,7 @@ import { RedisHealthController } from './controllers/redis-health.controller';
     RedisService,
     CacheService,
     RedisHealthService,
+    SchedulerService,
   ],
 })
 export class SharedModule {}
