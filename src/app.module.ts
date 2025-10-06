@@ -6,6 +6,7 @@ import { ReviewModule } from 'review/review.module';
 import { BlogModule } from 'blog/blog.module';
 import { AuthModule } from 'auth/auth.module';
 import { OrderModule } from 'order/order.module';
+import { PaymentModule } from 'payment/payment.module';
 
 import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { LoggerModule } from 'shared/logger/logger.module';
@@ -24,6 +25,7 @@ import { AllExceptionsFilter } from 'shared/filters/all-exceptions.filter';
     BlogModule,
     AuthModule,
     OrderModule,
+    PaymentModule,
   ],
   providers: [
     {

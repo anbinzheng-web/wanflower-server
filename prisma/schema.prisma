@@ -166,6 +166,7 @@ model Order {
   // 关联关系
   items           OrderItem[]
   reviews         ProductReview[] // 订单完成后的评论
+  payment_logs    PaymentLog[]    // 支付记录
   
   created_at      DateTime      @default(now())
   updated_at      DateTime      @updatedAt
@@ -239,6 +240,10 @@ model PaymentLog {
   bank_name             String?       @db.VarChar(100) // 银行名称
   account_last_four     String?       @db.VarChar(10)  // 账户后四位
   admin_id              Int           // 确认支付的管理员ID
+  
+  // 关联关系
+  order                 Order         @relation(fields: [order_id], references: [id])
+  admin                 User          @relation(fields: [admin_id], references: [id])
   
   created_at            DateTime      @default(now())
   
@@ -466,6 +471,7 @@ model User {
   addresses      UserAddress[]   // 用户地址
   review_votes   ReviewHelpfulVote[] // 评论投票记录
   refresh_tokens RefreshToken[] // Refresh Token
+  payment_logs   PaymentLog[]   // 支付记录（作为管理员确认的支付）
   
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
