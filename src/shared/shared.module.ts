@@ -9,9 +9,14 @@ import { EmailVerificationService } from './services/email-verification.service'
 import { DeviceService } from './services/device.service';
 import { LoginAttemptService } from './services/login-attempt.service';
 import { RefreshTokenService } from './services/refresh-token.service';
+import { RedisService } from './services/redis.service';
+import { CacheService } from './services/cache.service';
+import { RedisHealthService } from './services/redis-health.service';
+import { RedisHealthController } from './controllers/redis-health.controller';
 
 @Global()
 @Module({
+  controllers: [RedisHealthController],
   providers: [
     PrismaService,
     UploadService,
@@ -21,6 +26,9 @@ import { RefreshTokenService } from './services/refresh-token.service';
     DeviceService,
     LoginAttemptService,
     RefreshTokenService,
+    RedisService,
+    CacheService,
+    RedisHealthService,
     {
       provide: 'STORAGE_SERVICE',
       useClass: process.env.STORAGE_DRIVER === 'oss'
@@ -37,6 +45,9 @@ import { RefreshTokenService } from './services/refresh-token.service';
     DeviceService,
     LoginAttemptService,
     RefreshTokenService,
+    RedisService,
+    CacheService,
+    RedisHealthService,
   ],
 })
 export class SharedModule {}
