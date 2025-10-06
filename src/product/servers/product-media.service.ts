@@ -64,7 +64,9 @@ export class ProductMediaService {
     return {
       url: this.getMediaUrl(mediaRecord),
       thumbnail_url: this.getThumbnailUrl(mediaRecord),
-      ...mediaRecord
+      ...mediaRecord,
+      // FIX：JSON.stringify 的时候无法支持 BigInt，所以需要转换为字符串
+      file_size: String(mediaRecord.file_size)
     };
   }
 
@@ -106,7 +108,10 @@ export class ProductMediaService {
       }
     }
 
-    return results;
+    return results.map(item => ({
+      ...item,
+      file_size: String(item.file_size)
+    }));
   }
 
   // ================================
@@ -341,7 +346,7 @@ export class ProductMediaService {
       return media.cdn_url;
     } else if (media.storage_type === StorageType.LOCAL && media.local_path) {
       // 返回本地文件的访问URL
-      return `/uploads/${path.basename(media.local_path)}`;
+      return `/images/${path.basename(media.local_path)}`;
     }
     return '';
   }
@@ -357,7 +362,7 @@ export class ProductMediaService {
     if (media.storage_type === StorageType.CDN && media.thumbnail_cdn) {
       return media.thumbnail_cdn;
     } else if (media.storage_type === StorageType.LOCAL && media.thumbnail_local) {
-      return `/uploads/${path.basename(media.thumbnail_local)}`;
+      return `/images/${path.basename(media.thumbnail_local)}`;
     }
     
     return '';

@@ -6,7 +6,7 @@ alwaysApply: true
 
 ## 通用说明
 
-- 本系统是一个**电商平台**，因此所有命名规范（模块、实体、服务等）都应与电商领域相关（如 `Product`、`Order`、`Customer`、`Cart`、`Inventory` 等）。  
+- 本系统是一个**跨境电商平台**，因此所有命名规范（模块、实体、服务等）都应与电商领域相关（如 `Product`、`Order`、`Customer`、`Cart`、`Inventory` 等）。  
 - **代码必须使用英文编写。**  
 - **所有注释必须使用中文编写。**  
 - 每个 API 端点必须包含 **Swagger 装饰器**用于文档生成。  

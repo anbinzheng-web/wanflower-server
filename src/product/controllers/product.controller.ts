@@ -21,7 +21,8 @@ import {
   ProductMediaUploadDto, ProductMediaUpdateDto, ProductMediaDeleteDto,
   ProductMediaMigrateToCdnDto,
   CategoryListDto, CategoryCreateDto, CategoryUpdateDto,
-  ProductAttributeCreateDto, ProductAttributeUpdateDto, ProductAttributeListDto, ProductAttributeDeleteDto
+  ProductAttributeCreateDto, ProductAttributeUpdateDto, ProductAttributeListDto, ProductAttributeDeleteDto,
+  ProductMediaUploadOrderDto
 } from '../dtos';
 import { ApiPaginatedResponse, ApiMessageResponse } from 'shared/decorators/swagger.decorator';
 
@@ -50,6 +51,15 @@ export class ProductController {
   @ApiMessageResponse(ProductDetailDto)
   async getProductDetail(@Param('id', ParseIntPipe) id: number) {
     return await this.productService.getProductDetail({ id });
+  }
+
+  @Get('sku/:sku')
+  @ApiOperation({ summary: '通过SKU获取产品详情' })
+  @ApiParam({ name: 'sku', description: '产品SKU' })
+  @ApiMessageResponse(ProductDetailDto)
+  @ApiResponse({ status: 404, description: '产品不存在' })
+  async getProductBySku(@Param('sku') sku: string) {
+    return await this.productService.getProductBySku(sku);
   }
 
   @Post('view')
@@ -147,7 +157,7 @@ export class ProductController {
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
   async uploadProductMedia(
     @UploadedFile() file: any,
-    @Body() data: Omit<ProductMediaUploadDto, 'file'>
+    @Body() data: ProductMediaUploadOrderDto
   ) {
     return await this.productMediaService.uploadProductMedia(file, data);
   }

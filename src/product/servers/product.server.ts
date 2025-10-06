@@ -127,6 +127,61 @@ export class ProductService {
   }
 
   /**
+   * 通过SKU获取产品详情
+   */
+  async getProductBySku(sku: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { 
+        sku: sku,
+        deleted_at: null
+      },
+      include: {
+        category: {
+          select: { id: true, name: true, slug: true }
+        },
+        media: {
+          orderBy: [
+            { media_category: 'asc' },
+            { sort_order: 'asc' }
+          ],
+          select: {
+            id: true,
+            type: true,
+            storage_type: true,
+            local_path: true,
+            cdn_url: true,
+            file_size: true,
+            mime_type: true,
+            width: true,
+            height: true,
+            duration: true,
+            thumbnail_local: true,
+            thumbnail_cdn: true,
+            alt_text: true,
+            media_category: true,
+            sort_order: true
+          }
+        },
+        attributes: {
+          orderBy: { sort_order: 'asc' },
+          select: {
+            id: true,
+            name: true,
+            value: true,
+            sort_order: true
+          }
+        }
+      }
+    });
+
+    if (!product) {
+      throw new NotFoundException('产品不存在');
+    }
+
+    return product;
+  }
+
+  /**
    * 获取产品详情
    */
   async getProductDetail(query: ProductDetailDto) {

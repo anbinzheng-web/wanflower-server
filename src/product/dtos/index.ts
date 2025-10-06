@@ -5,6 +5,8 @@ import {
   ValidateNested, ArrayMaxSize, IsUrl
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+import { OmitType } from '@nestjs/mapped-types';
+
 // 临时类型定义，直到Prisma客户端生成
 enum ProductStatus {
   ACTIVE = 'ACTIVE',
@@ -341,6 +343,8 @@ export class ProductMediaUploadDto {
   @IsString()
   alt_text?: string;
 }
+
+export class ProductMediaUploadOrderDto extends OmitType(ProductMediaUploadDto, ['file'] as const) {}
 
 export class ProductMediaUpdateDto {
   @ApiProperty({ description: '媒体ID' })

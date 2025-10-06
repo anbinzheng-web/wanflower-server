@@ -59,3 +59,8 @@ registerGlobalProperties();
   }
 })();
 bootstrap();
+
+// main.ts
+(BigInt.prototype as any).toJSON = function() {
+  return this.toString();
+};

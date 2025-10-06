@@ -223,6 +223,32 @@ model CartItem {
 }
 
 // ================================
+// 支付相关模型
+// ================================
+
+// 支付日志表
+model PaymentLog {
+  id                    Int           @id @default(autoincrement())
+  order_id              Int
+  payment_method        PaymentMethod
+  amount                Decimal       @db.Decimal(10, 2)
+  payment_id            String?       @db.VarChar(100) // 第三方支付ID
+  paid_at               DateTime
+  payment_notes         String?       @db.Text
+  transaction_reference String?       @db.VarChar(100) // 交易凭证号
+  bank_name             String?       @db.VarChar(100) // 银行名称
+  account_last_four     String?       @db.VarChar(10)  // 账户后四位
+  admin_id              Int           // 确认支付的管理员ID
+  
+  created_at            DateTime      @default(now())
+  
+  @@index([order_id])
+  @@index([payment_method])
+  @@index([paid_at])
+  @@index([admin_id])
+}
+
+// ================================
 // 评论相关模型
 // ================================
 
@@ -641,4 +667,17 @@ enum VerificationType {
   RESET_PASSWORD // 重置密码
   CHANGE_EMAIL   // 更换邮箱
   TWO_FACTOR     // 双因素认证
+}
+
+// 支付方式
+enum PaymentMethod {
+  CASH         // 现金
+  BANK_TRANSFER // 银行转账
+  WIRE_TRANSFER // 电汇
+  CHECK        // 支票
+  STRIPE       // Stripe支付
+  PAYPAL       // PayPal支付
+  ALIPAY       // 支付宝
+  WECHAT_PAY   // 微信支付
+  OTHER        // 其他
 }

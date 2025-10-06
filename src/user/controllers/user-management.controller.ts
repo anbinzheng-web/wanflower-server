@@ -10,7 +10,8 @@ import {
   UseGuards,
   ParseIntPipe,
   HttpCode,
-  HttpStatus
+  HttpStatus,
+  NotFoundException
 } from '@nestjs/common';
 import { 
   ApiTags, 
@@ -85,6 +86,32 @@ export class UserManagementController {
   @ApiResponse({ status: 403, description: '权限不足' })
   async getUserById(@Param('id', ParseIntPipe) id: number): Promise<UserResponseDto> {
     const user = await this.userService.getUserById(id);
+    return {
+      ...user,
+      first_name: user.first_name || undefined,
+      last_name: user.last_name || undefined,
+      phone: user.phone || undefined,
+      avatar_url: user.avatar_url || undefined,
+      last_login: user.last_login || undefined,
+    };
+  }
+
+  /**
+   * 通过邮箱获取用户详情
+   */
+  @Get('email/:email')
+  @Roles('admin' as any, 'staff' as any)
+  @ApiOperation({ summary: '通过邮箱获取用户详情' })
+  @ApiParam({ name: 'email', description: '用户邮箱', type: 'string' })
+  @ApiMessageResponse(UserResponseDto)
+  @ApiResponse({ status: 404, description: '用户不存在' })
+  @ApiResponse({ status: 401, description: '未授权' })
+  @ApiResponse({ status: 403, description: '权限不足' })
+  async getUserByEmail(@Param('email') email: string): Promise<UserResponseDto> {
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
     return {
       ...user,
       first_name: user.first_name || undefined,
