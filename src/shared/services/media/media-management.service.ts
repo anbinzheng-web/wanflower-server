@@ -166,21 +166,22 @@ export class MediaManagementService {
    */
   private async generateThumbnail(buffer: Buffer, originalPath: string): Promise<string> {
     try {
-      const thumbnailDir = path.join(process.cwd(), 'uploads', 'thumbnails');
+      const thumbnailDir = path.join(process.cwd(), 'thumbnails');
       if (!fs.existsSync(thumbnailDir)) {
         fs.mkdirSync(thumbnailDir, { recursive: true });
       }
 
       const filename = path.basename(originalPath);
       const nameWithoutExt = path.parse(filename).name;
-      const thumbnailPath = path.join(thumbnailDir, `${nameWithoutExt}_thumb.jpg`);
+      const ext = path.extname(originalPath);
+      const thumbnailPath = path.join('uploads', 'thumbnails', `${nameWithoutExt}_thumb${ext}`);
 
       await sharp(buffer)
         .resize(300, 300, { fit: 'inside', withoutEnlargement: true })
         .jpeg({ quality: 80 })
         .toFile(thumbnailPath);
 
-      return `/uploads/thumbnails/${nameWithoutExt}_thumb.jpg`;
+      return `thumbnails/${nameWithoutExt}_thumb${ext}`;
     } catch (error) {
       console.warn('生成缩略图失败:', error);
       return '';
@@ -194,13 +195,13 @@ export class MediaManagementService {
     switch (mediaRecord.storage_type) {
       case StorageType.LOCAL:
         // 本地存储时，自动拼接 /images 前缀
-        return mediaRecord.local_path ? `/images/${mediaRecord.local_path}` : '';
+        return mediaRecord.local_path ? `/images${mediaRecord.local_path}` : '';
       case StorageType.OSS:
         return mediaRecord.oss_url || '';
       case StorageType.CDN:
         return mediaRecord.cdn_url || '';
       default:
-        return mediaRecord.local_path ? `/images/${mediaRecord.local_path}` : '';
+        return mediaRecord.local_path ? `/images${mediaRecord.local_path}` : '';
     }
   }
 

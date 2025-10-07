@@ -2,7 +2,8 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from 'shared/services/prisma.service';
 import { MediaManagementService } from 'shared/services/media/media-management.service';
 import { 
-  ProductMediaUploadDto, ProductMediaUpdateDto, ProductMediaDeleteDto
+  ProductMediaUploadDto, ProductMediaUpdateDto, ProductMediaDeleteDto,
+  ProductMediaUploadOrderDto
 } from '../dtos';
 import { MediaType } from '@prisma/client';
 
@@ -16,7 +17,7 @@ export class ProductMediaService {
   /**
    * 上传产品媒体文件
    */
-  async uploadProductMedia(file: any, data: Omit<ProductMediaUploadDto, 'file'>) {
+  async uploadProductMedia(file: any, data: ProductMediaUploadOrderDto) {
     // 验证产品是否存在
     const product = await this.prisma.product.findFirst({
       where: { id: data.product_id, deleted_at: null }
@@ -40,32 +41,29 @@ export class ProductMediaService {
     });
 
     return {
-      success: true,
-      data: {
-        id: mediaResult.id,
-        url: mediaResult.url,
-        thumbnail_url: mediaResult.thumbnail_url,
-        filename: mediaResult.filename,
-        file_size: mediaResult.file_size,
-        mime_type: mediaResult.mime_type,
-        width: mediaResult.width,
-        height: mediaResult.height,
-        duration: mediaResult.duration,
-        alt_text: mediaResult.alt_text,
-        sort_order: mediaResult.sort_order,
-        media_category: data.media_category || 'MAIN',
-        created_at: mediaResult.created_at
-      }
+      id: mediaResult.id,
+      url: mediaResult.url,
+      thumbnail_url: mediaResult.thumbnail_url,
+      filename: mediaResult.filename,
+      file_size: mediaResult.file_size,
+      mime_type: mediaResult.mime_type,
+      width: mediaResult.width,
+      height: mediaResult.height,
+      duration: mediaResult.duration,
+      alt_text: mediaResult.alt_text,
+      sort_order: mediaResult.sort_order,
+      media_category: data.media_category || 'MAIN',
+      created_at: mediaResult.created_at
     };
   }
 
   /**
    * 批量上传产品媒体文件
    */
-  async batchUploadProductMedia(files: any[], productId: number, type: MediaType) {
+  async batchUploadProductMedia(files: any[], data: ProductMediaUploadOrderDto) {
     // 验证产品是否存在
     const product = await this.prisma.product.findFirst({
-      where: { id: productId, deleted_at: null }
+      where: { id: data.product_id, deleted_at: null }
     });
     if (!product) {
       throw new NotFoundException('产品不存在');
@@ -77,15 +75,15 @@ export class ProductMediaService {
       const file = files[i];
       try {
         // 验证文件类型和大小
-        this.validateMediaFile(file, type);
+        this.validateMediaFile(file, data.type);
 
         const mediaResult = await this.mediaManagementService.uploadMedia({
           file,
           businessType: 'PRODUCT',
-          businessId: productId,
-          type: type,
+          businessId: data.product_id,
+          type: data.type,
           sortOrder: i,
-          category: 'GALLERY'
+          category: data.media_category || 'GALLERY'
         });
 
         results.push({
@@ -220,14 +218,10 @@ export class ProductMediaService {
     });
 
     return {
-      success: true,
-      message: '主图设置成功',
-      data: {
-        product_id: productId,
-        main_image: mediaUrl,
-        media_id: mediaId
-      }
-    };
+      product_id: productId,
+      main_image: mediaUrl,
+      media_id: mediaId
+    }
   }
 
   /**
@@ -312,23 +306,20 @@ export class ProductMediaService {
     }
 
     return {
-      success: true,
-      data: {
-        id: media.id,
-        url: this.mediaManagementService.getMediaUrl(media),
-        thumbnail_url: this.mediaManagementService.getThumbnailUrl(media),
-        filename: media.filename,
-        file_size: media.file_size?.toString(),
-        mime_type: media.mime_type,
-        width: media.width,
-        height: media.height,
-        duration: media.duration,
-        alt_text: media.alt_text,
-        sort_order: media.sort_order,
-        category: media.category,
-        created_at: media.created_at,
-        updated_at: media.updated_at
-      }
-    };
+      id: media.id,
+      url: this.mediaManagementService.getMediaUrl(media),
+      thumbnail_url: this.mediaManagementService.getThumbnailUrl(media),
+      filename: media.filename,
+      file_size: media.file_size?.toString(),
+      mime_type: media.mime_type,
+      width: media.width,
+      height: media.height,
+      duration: media.duration,
+      alt_text: media.alt_text,
+      sort_order: media.sort_order,
+      category: media.category,
+      created_at: media.created_at,
+      updated_at: media.updated_at
+    }
   }
 }

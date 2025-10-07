@@ -73,3 +73,14 @@ export class PaginatedDto<TData> {
   @ApiProperty({ description: '响应消息', example: 'success' })
   message: string;
 }
+
+export class ArrayDto<TData> {
+  @ApiProperty({ description: '响应状态码', example: 0 })
+  code: number;
+
+  @ApiProperty({ description: '响应消息', example: 'success' })
+  message: string;
+
+  @ApiProperty({ description: '数组数据', type: 'array' })
+  data: TData[];
+}

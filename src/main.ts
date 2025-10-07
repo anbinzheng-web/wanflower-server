@@ -4,7 +4,6 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder, SwaggerCustomOptions } from '@nestjs/swagger'; // 导入 Swagger 相关模块
 import { ResponseInterceptor } from 'shared/interceptors/response.interceptor';
 import { ValidationPipe } from '@nestjs/common';
-import { AllExceptionsFilter } from 'shared/filters/all-exceptions.filter';
 import { registerGlobalProperties } from './globalProperties';
 import path from 'path';
 import fs from 'fs';

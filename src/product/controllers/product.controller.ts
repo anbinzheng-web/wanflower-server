@@ -13,18 +13,19 @@ import { RolesGuard } from 'auth/roles.guard';
 import { Roles } from 'auth/roles.decorator';
 import { Role } from 'auth/roles.enum';
 import { MediaType } from '@prisma/client';
-import { ProductService } from '../servers/product.server';
+import { ProductService } from '../services/product.server';
 import { ProductMediaService } from '../services/product-media.service';
 import { 
   ProductListDto, ProductDetailDto, ProductCreateDto, ProductUpdateDto,
   ProductViewDto, ProductBatchDeleteDto, ProductBatchUpdateStatusDto,
   ProductMediaUploadDto, ProductMediaUpdateDto, ProductMediaDeleteDto,
-  ProductMediaMigrateToCdnDto,
   CategoryListDto, CategoryCreateDto, CategoryUpdateDto,
   ProductAttributeCreateDto, ProductAttributeUpdateDto, ProductAttributeListDto, ProductAttributeDeleteDto,
-  ProductMediaUploadOrderDto
+  ProductMediaUploadOrderDto,
+  ProductMediaBatchUploadOrderDto,
+  CategoryItemDto
 } from '../dtos';
-import { ApiPaginatedResponse, ApiMessageResponse } from 'shared/decorators/swagger.decorator';
+import { ApiPaginatedResponse, ApiMessageResponse, ApiArrayResponse } from 'shared/decorators/swagger.decorator';
 
 @ApiTags('product')
 @Controller('product')
@@ -155,22 +156,22 @@ export class ProductController {
     return await this.productMediaService.uploadProductMedia(file, data);
   }
 
-  @Post('media/batch-upload/:productId')
+  @Post('media/batch-upload')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Staff, Role.Admin)
   @ApiBearerAuth()
   @UseInterceptors(FilesInterceptor('files', 10)) // 最多10个文件
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: '批量上传产品媒体文件', description: '使用统一媒体管理系统，需要员工或管理员权限' })
-  @ApiParam({ name: 'productId', description: '产品ID' })
+  @ApiBody({ type: ProductMediaBatchUploadOrderDto })
   @ApiResponse({ status: HttpStatus.CREATED, description: '上传成功' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '文件格式或大小不符合要求' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
   async batchUploadProductMedia(
     @UploadedFiles() files: any[],
-    @Param('productId', ParseIntPipe) productId: number,
-    @Body('type') type: MediaType = MediaType.IMAGE
+    @Body() data: ProductMediaUploadOrderDto
   ) {
-    return await this.productMediaService.batchUploadProductMedia(files, productId, type);
+    return await this.productMediaService.batchUploadProductMedia(files, data);
   }
 
   @Put('media/update')
@@ -220,20 +221,20 @@ export class ProductController {
     return await this.productMediaService.getProductMediaById(mediaId);
   }
 
-  @Post('media/set-main/:productId/:mediaId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Staff, Role.Admin)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '设置产品主图', description: '使用统一媒体管理系统，需要员工或管理员权限' })
-  @ApiParam({ name: 'productId', description: '产品ID' })
-  @ApiParam({ name: 'mediaId', description: '媒体文件ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '设置成功' })
-  async setProductMainImage(
-    @Param('productId', ParseIntPipe) productId: number,
-    @Param('mediaId', ParseIntPipe) mediaId: number
-  ) {
-    return await this.productMediaService.setProductMainImage(productId, mediaId);
-  }
+  // @Post('media/set-main/:productId/:mediaId')
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(Role.Staff, Role.Admin)
+  // @ApiBearerAuth()
+  // @ApiOperation({ summary: '设置产品主图', description: '使用统一媒体管理系统，需要员工或管理员权限' })
+  // @ApiParam({ name: 'productId', description: '产品ID' })
+  // @ApiParam({ name: 'mediaId', description: '媒体文件ID' })
+  // @ApiResponse({ status: HttpStatus.OK, description: '设置成功' })
+  // async setProductMainImage(
+  //   @Param('productId', ParseIntPipe) productId: number,
+  //   @Param('mediaId', ParseIntPipe) mediaId: number
+  // ) {
+  //   return await this.productMediaService.setProductMainImage(productId, mediaId);
+  // }
 
   @Get('media/stats/:productId')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -252,7 +253,7 @@ export class ProductController {
 
   @Get('category/list')
   @ApiOperation({ summary: '获取产品分类列表' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取成功' })
+  @ApiArrayResponse(CategoryItemDto)
   async getCategoryList(@Query() query: CategoryListDto) {
     return await this.productService.getCategoryList(query);
   }

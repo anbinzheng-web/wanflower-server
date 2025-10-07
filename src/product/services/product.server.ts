@@ -475,7 +475,7 @@ export class ProductService {
    * 获取分类列表
    */
   async getCategoryList(query: CategoryListDto) {
-    const { page, page_size, parent_id, is_active } = query;
+    const { parent_id, is_active } = query;
 
     const where: any = {};
 
@@ -487,38 +487,15 @@ export class ProductService {
       where.is_active = is_active;
     }
 
-    const [categories, total] = await Promise.all([
-      this.prisma.productCategory.findMany({
-        skip: (page - 1) * page_size,
-        take: page_size,
-        where,
-        orderBy: [
-          { sort_order: 'asc' },
-          { created_at: 'desc' }
-        ],
-        include: {
-          parent: {
-            select: { id: true, name: true, slug: true }
-          },
-          children: {
-            select: { id: true, name: true, slug: true, is_active: true },
-            orderBy: { sort_order: 'asc' }
-          },
-          _count: {
-            select: { products: true }
-          }
-        }
-      }),
-      this.prisma.productCategory.count({ where })
-    ]);
+    const categories = await this.prisma.productCategory.findMany({
+      where,
+      orderBy: [
+        { sort_order: 'asc' },
+        { created_at: 'desc' }
+      ]
+    });
 
-    return {
-      records: categories,
-      total,
-      page,
-      page_size,
-      total_pages: Math.ceil(total / page_size)
-    };
+    return categories;
   }
 
   /**

@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { 
   IsInt, IsOptional, IsIn, IsEnum, IsNumber, IsNotEmpty, 
   IsString, IsArray, IsDecimal, Min, Max, IsBoolean,
@@ -6,22 +6,12 @@ import {
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { OmitType } from '@nestjs/mapped-types';
-
-// 临时类型定义，直到Prisma客户端生成
-enum ProductStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE', 
-  DRAFT = 'DRAFT'
-}
+import { PageDto } from 'shared/dto/page.dto';
+import { ProductStatus } from '@prisma/client';
 
 enum MediaType {
   IMAGE = 'IMAGE',
   VIDEO = 'VIDEO'
-}
-
-enum StorageType {
-  LOCAL = 'LOCAL',
-  CDN = 'CDN'
 }
 
 enum MediaCategory {
@@ -29,8 +19,6 @@ enum MediaCategory {
   GALLERY = 'GALLERY',
   DETAIL = 'DETAIL'
 }
-import { PartialType } from '@nestjs/mapped-types';
-import { PageDto } from 'shared/dto/page.dto';
 
 // ================================
 // 产品查询相关 DTO
@@ -346,6 +334,11 @@ export class ProductMediaUploadDto {
 
 export class ProductMediaUploadOrderDto extends OmitType(ProductMediaUploadDto, ['file'] as const) {}
 
+export class ProductMediaBatchUploadOrderDto extends OmitType(ProductMediaUploadDto, ['file'] as const) {
+  @ApiProperty({ type: 'string', format: 'binary', description: '媒体文件' })
+  files: any[];
+}
+
 export class ProductMediaUpdateDto {
   @ApiProperty({ description: '媒体ID' })
   @IsInt()
@@ -441,7 +434,7 @@ export class CategoryUpdateDto extends PartialType(CategoryCreateDto) {
   id: number;
 }
 
-export class CategoryListDto extends PageDto {
+export class CategoryListDto {
   @ApiPropertyOptional({ description: '父分类ID' })
   @IsOptional()
   @IsInt()
@@ -453,6 +446,39 @@ export class CategoryListDto extends PageDto {
   @IsBoolean()
   is_active?: boolean;
 }
+
+export class CategoryItemDto {
+  @ApiProperty({ description: '分类ID' })
+  id: number;
+
+  @ApiProperty({ description: '分类名称' })
+  name: string;
+
+  @ApiProperty({ description: 'URL友好标识' })
+  slug: string;
+
+  @ApiPropertyOptional({ description: '分类描述' })
+  description?: string;
+
+  @ApiPropertyOptional({ description: '分类图片URL' })
+  image_url?: string;
+
+  @ApiPropertyOptional({ description: '父分类ID' })
+  parent_id?: number;
+
+  @ApiProperty({ description: '排序权重' })
+  sort_order: number;
+
+  @ApiProperty({ description: '是否启用' })
+  is_active: boolean;
+
+  @ApiProperty({ description: '创建时间' })
+  created_at: Date;
+
+  @ApiProperty({ description: '更新时间' })
+  updated_at: Date;
+}
+
 
 // ================================
 // 其他操作相关 DTO
