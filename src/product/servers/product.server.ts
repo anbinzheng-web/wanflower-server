@@ -91,7 +91,10 @@ export class ProductService {
             select: { id: true, name: true, slug: true }
           },
           media: {
-            where: { media_category: 'MAIN' },
+            where: { 
+              business_type: 'PRODUCT',
+              category: 'MAIN'
+            },
             orderBy: { sort_order: 'asc' },
             take: 1,
             select: {
@@ -99,6 +102,7 @@ export class ProductService {
               type: true,
               storage_type: true,
               local_path: true,
+              oss_url: true,
               cdn_url: true,
               alt_text: true
             }
@@ -140,8 +144,9 @@ export class ProductService {
           select: { id: true, name: true, slug: true }
         },
         media: {
+          where: { business_type: 'PRODUCT' },
           orderBy: [
-            { media_category: 'asc' },
+            { category: 'asc' },
             { sort_order: 'asc' }
           ],
           select: {
@@ -149,6 +154,7 @@ export class ProductService {
             type: true,
             storage_type: true,
             local_path: true,
+            oss_url: true,
             cdn_url: true,
             file_size: true,
             mime_type: true,
@@ -156,9 +162,10 @@ export class ProductService {
             height: true,
             duration: true,
             thumbnail_local: true,
+            thumbnail_oss: true,
             thumbnail_cdn: true,
             alt_text: true,
-            media_category: true,
+            category: true,
             sort_order: true
           }
         },
@@ -195,8 +202,9 @@ export class ProductService {
           select: { id: true, name: true, slug: true }
         },
         media: {
+          where: { business_type: 'PRODUCT' },
           orderBy: [
-            { media_category: 'asc' },
+            { category: 'asc' },
             { sort_order: 'asc' }
           ],
           select: {
@@ -204,6 +212,7 @@ export class ProductService {
             type: true,
             storage_type: true,
             local_path: true,
+            oss_url: true,
             cdn_url: true,
             file_size: true,
             mime_type: true,
@@ -211,9 +220,10 @@ export class ProductService {
             height: true,
             duration: true,
             thumbnail_local: true,
+            thumbnail_oss: true,
             thumbnail_cdn: true,
             alt_text: true,
-            media_category: true,
+            category: true,
             sort_order: true
           }
         },

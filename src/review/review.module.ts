@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ReviewController } from './review.controler';
 import { ReviewService } from './review.service';
-import { ReviewMediaService } from './review-media.service';
+import { ReviewMediaService } from './services/review-media.service';
 import { SharedModule } from 'shared/shared.module';
 
 @Module({

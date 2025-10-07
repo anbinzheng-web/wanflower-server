@@ -25,7 +25,7 @@ export class CartService {
                 stock: true,
                 status: true,
                 media: {
-                  where: { media_category: 'MAIN' },
+                  where: { category: 'MAIN' },
                   select: {
                     local_path: true,
                     cdn_url: true,
@@ -61,7 +61,7 @@ export class CartService {
                   stock: true,
                   status: true,
                   media: {
-                    where: { media_category: 'MAIN' },
+                    where: { category: 'MAIN' },
                     select: {
                       local_path: true,
                       cdn_url: true,

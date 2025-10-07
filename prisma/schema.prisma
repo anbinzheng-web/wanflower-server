@@ -33,7 +33,7 @@ model Product {
   category_id   Int?               // 产品分类
   category      ProductCategory?   @relation(fields: [category_id], references: [id])
   attributes    ProductAttribute[]
-  media         ProductMedia[]     // 替换原来的 images，支持视频
+  media         Media[]            @relation("ProductMedia") // 使用统一的 Media 表
   reviews       ProductReview[]
   order_items   OrderItem[]        // 订单项
   cart_items    CartItem[]         // 购物车项
@@ -74,44 +74,6 @@ model ProductCategory {
 }
 
 // 产品媒体文件（图片、视频）
-model ProductMedia {
-  id          Int              @id @default(autoincrement())
-  product_id  Int
-  type        MediaType        // IMAGE, VIDEO
-  storage_type StorageType     @default(LOCAL) // LOCAL, CDN
-  
-  // 本地存储字段
-  local_path  String?          @db.VarChar(500) // 本地文件路径
-  filename    String?          @db.VarChar(255) // 原始文件名
-  
-  // CDN 存储字段
-  cdn_url     String?          @db.VarChar(500) // CDN URL
-  cdn_key     String?          @db.VarChar(255) // CDN 存储键
-  
-  // 通用字段
-  file_size   BigInt?          // 文件大小（字节）
-  mime_type   String?          @db.VarChar(100) // MIME 类型
-  width       Int?             // 图片/视频宽度
-  height      Int?             // 图片/视频高度
-  duration    Int?             // 视频时长（秒）
-  
-  // 缩略图（用于视频预览）
-  thumbnail_local String?      @db.VarChar(500)
-  thumbnail_cdn   String?      @db.VarChar(500)
-  
-  alt_text    String?          @db.VarChar(255) // 替代文本
-  sort_order  Int              @default(0)
-  media_category MediaCategory @default(MAIN)   // MAIN, GALLERY, DETAIL
-  
-  product     Product          @relation(fields: [product_id], references: [id], onDelete: Cascade)
-  
-  created_at  DateTime         @default(now())
-  updated_at  DateTime         @updatedAt
-  
-  @@index([product_id])
-  @@index([type])
-  @@index([storage_type])
-}
 
 model ProductAttribute {
   id         Int     @id @default(autoincrement())
@@ -473,6 +435,7 @@ model User {
   review_votes   ReviewHelpfulVote[] // 评论投票记录
   refresh_tokens RefreshToken[] // Refresh Token
   payment_logs   PaymentLog[]   // 支付记录（作为管理员确认的支付）
+  media          Media[]        // 用户上传的媒体文件
   
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -609,15 +572,11 @@ enum MediaType {
 // 存储类型
 enum StorageType {
   LOCAL  // 本地存储
+  OSS    // OSS存储
   CDN    // CDN存储
 }
 
 // 媒体分类
-enum MediaCategory {
-  MAIN     // 主图/主视频
-  GALLERY  // 画廊/展示
-  DETAIL   // 详情图/视频
-}
 
 // 产品状态
 enum ProductStatus {
@@ -687,4 +646,69 @@ enum PaymentMethod {
   ALIPAY       // 支付宝
   WECHAT_PAY   // 微信支付
   OTHER        // 其他
+}
+
+// ================================
+// 统一媒体管理模型
+// ================================
+
+model Media {
+  id            Int              @id @default(autoincrement())
+  business_type String           @db.VarChar(50)  // PRODUCT, BLOG, REVIEW, USER, GENERAL
+  business_id   Int?             // 关联的业务ID
+  type          MediaType        // IMAGE, VIDEO
+  storage_type  StorageType      @default(LOCAL)  // LOCAL, OSS, CDN
+  
+  // 本地存储字段
+  local_path    String?          @db.VarChar(500) // 本地文件路径
+  filename      String?          @db.VarChar(255) // 原始文件名
+  
+  // OSS 存储字段
+  oss_url       String?          @db.VarChar(500) // OSS URL
+  oss_key       String?          @db.VarChar(255) // OSS 存储键
+  
+  // CDN 存储字段
+  cdn_url       String?          @db.VarChar(500) // CDN URL
+  cdn_key       String?          @db.VarChar(255) // CDN 存储键
+  
+  // 通用字段
+  file_size     BigInt?          // 文件大小（字节）
+  mime_type     String?          @db.VarChar(100) // MIME 类型
+  width         Int?             // 图片/视频宽度
+  height        Int?             // 图片/视频高度
+  duration      Int?             // 视频时长（秒）
+  
+  // 缩略图
+  thumbnail_local String?        @db.VarChar(500)
+  thumbnail_oss   String?        @db.VarChar(500)
+  thumbnail_cdn   String?        @db.VarChar(500)
+  
+  alt_text      String?          @db.VarChar(255) // 替代文本
+  sort_order    Int              @default(0)
+  category      String           @default("DEFAULT") @db.VarChar(50) // 媒体分类
+  
+  // 用户关联
+  user_id       Int?             // 上传用户ID
+  user          User?            @relation(fields: [user_id], references: [id])
+  
+  // 产品关联（当 business_type = 'PRODUCT' 时）
+  product       Product?         @relation("ProductMedia", fields: [business_id], references: [id], map: "product_media_id")
+  
+  created_at    DateTime         @default(now())
+  updated_at    DateTime         @updatedAt
+  deleted_at    DateTime?        // 软删除
+
+  @@index([business_type, business_id])
+  @@index([type])
+  @@index([user_id])
+  @@index([category])
+}
+
+// 业务类型枚举
+enum BusinessType {
+  PRODUCT      // 产品
+  BLOG         // 博客
+  REVIEW       // 评论
+  USER         // 用户
+  GENERAL      // 通用
 }

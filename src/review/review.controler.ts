@@ -13,7 +13,7 @@ import { RolesGuard } from 'auth/roles.guard';
 import { Roles } from 'auth/roles.decorator';
 import { Role } from 'auth/roles.enum';
 import { ReviewService } from './review.service';
-import { ReviewMediaService } from './review-media.service';
+import { ReviewMediaService } from './services/review-media.service';
 import { 
   ReviewListDto, ReviewCreateDto, ReviewUpdateDto, ReviewDetailDto,
   ReviewHelpfulVoteDto, ReviewModerationDto, ReviewBatchModerationDto,
@@ -131,12 +131,13 @@ export class ReviewController {
   // 媒体文件管理接口（需要登录）
   // ================================
 
+
   @Post('media/upload')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: '上传评论媒体文件', description: '支持图片和视频，需要登录' })
+  @ApiOperation({ summary: '上传评论媒体文件', description: '使用统一媒体管理系统，支持图片和视频，需要登录' })
   @ApiBody({ type: ReviewMediaUploadDto })
   @ApiResponse({ status: HttpStatus.CREATED, description: '上传成功' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '文件格式或大小不符合要求' })
@@ -154,7 +155,7 @@ export class ReviewController {
   @ApiBearerAuth()
   @UseInterceptors(FilesInterceptor('files', 9)) // 最多9个文件
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: '批量上传评论媒体文件', description: '需要登录' })
+  @ApiOperation({ summary: '批量上传评论媒体文件', description: '使用统一媒体管理系统，需要登录' })
   @ApiParam({ name: 'reviewId', description: '评论ID' })
   @ApiResponse({ status: HttpStatus.CREATED, description: '上传成功' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '无权限操作此评论' })
@@ -164,7 +165,7 @@ export class ReviewController {
     @Body('type') type: MediaType = MediaType.IMAGE,
     @Request() req: any
   ) {
-    return await this.reviewMediaService.batchUploadReviewMedia(files, reviewId, type, req.user.id);
+    return await this.reviewMediaService.batchUploadReviewMedia(files, reviewId, req.user.id);
   }
 
   @Put('media/update')
@@ -196,7 +197,7 @@ export class ReviewController {
   @ApiParam({ name: 'reviewId', description: '评论ID' })
   @ApiResponse({ status: HttpStatus.OK, description: '获取成功' })
   async getMyReviewMedia(@Param('reviewId', ParseIntPipe) reviewId: number, @Request() req: any) {
-    return await this.reviewMediaService.getReviewMedia(reviewId, req.user.id);
+    return await this.reviewMediaService.getReviewMedia(reviewId);
   }
 
   // ================================
@@ -247,6 +248,6 @@ export class ReviewController {
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '媒体文件不存在' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
   async adminDeleteReviewMedia(@Param('mediaId', ParseIntPipe) mediaId: number, @Request() req: any) {
-    return await this.reviewMediaService.adminDeleteReviewMedia(mediaId, req.user.id);
+    return await this.reviewMediaService.deleteReviewMedia({ id: mediaId }, req.user.id);
   }
 }

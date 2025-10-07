@@ -14,7 +14,7 @@ import { Roles } from 'auth/roles.decorator';
 import { Role } from 'auth/roles.enum';
 import { MediaType } from '@prisma/client';
 import { ProductService } from '../servers/product.server';
-import { ProductMediaService } from '../servers/product-media.service';
+import { ProductMediaService } from '../services/product-media.service';
 import { 
   ProductListDto, ProductDetailDto, ProductCreateDto, ProductUpdateDto,
   ProductViewDto, ProductBatchDeleteDto, ProductBatchUpdateStatusDto,
@@ -69,13 +69,6 @@ export class ProductController {
     return await this.productService.incrementProductView(data);
   }
 
-  @Get('media/:productId')
-  @ApiOperation({ summary: '获取产品媒体文件' })
-  @ApiParam({ name: 'productId', description: '产品ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '获取成功' })
-  async getProductMedia(@Param('productId', ParseIntPipe) productId: number) {
-    return await this.productMediaService.getProductMedia(productId);
-  }
 
   // ================================
   // 管理接口（需要员工或管理员权限）
@@ -150,7 +143,7 @@ export class ProductController {
   @ApiBearerAuth()
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: '上传产品媒体文件', description: '支持图片和视频，需要员工或管理员权限' })
+  @ApiOperation({ summary: '上传产品媒体文件', description: '使用统一媒体管理系统，支持图片和视频，需要员工或管理员权限' })
   @ApiBody({ type: ProductMediaUploadDto })
   @ApiResponse({ status: HttpStatus.CREATED, description: '上传成功' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '文件格式或大小不符合要求' })
@@ -168,7 +161,7 @@ export class ProductController {
   @ApiBearerAuth()
   @UseInterceptors(FilesInterceptor('files', 10)) // 最多10个文件
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: '批量上传产品媒体文件', description: '需要员工或管理员权限' })
+  @ApiOperation({ summary: '批量上传产品媒体文件', description: '使用统一媒体管理系统，需要员工或管理员权限' })
   @ApiParam({ name: 'productId', description: '产品ID' })
   @ApiResponse({ status: HttpStatus.CREATED, description: '上传成功' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
@@ -204,31 +197,53 @@ export class ProductController {
     return await this.productMediaService.deleteProductMedia(data);
   }
 
-  // ================================
-  // CDN迁移接口（仅管理员权限）
-  // ================================
-
-  @Post('media/migrate-to-cdn')
+  @Get('media/list/:productId')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Staff, Role.Admin)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '迁移媒体文件到CDN', description: '仅管理员权限' })
-  @ApiResponse({ status: HttpStatus.OK, description: '迁移成功' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
-  async migrateMediaToCdn(@Body() data: ProductMediaMigrateToCdnDto) {
-    return await this.productMediaService.migrateMediaToCdn(data);
+  @ApiOperation({ summary: '获取产品媒体列表', description: '使用统一媒体管理系统，需要员工或管理员权限' })
+  @ApiParam({ name: 'productId', description: '产品ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功' })
+  async getProductMediaList(@Param('productId', ParseIntPipe) productId: number) {
+    return await this.productMediaService.getProductMedia(productId);
   }
 
-  @Post('media/batch-migrate-to-cdn/:productId')
+  @Get('media/:mediaId')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  @Roles(Role.Staff, Role.Admin)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '批量迁移产品媒体到CDN', description: '仅管理员权限' })
+  @ApiOperation({ summary: '获取单个媒体文件信息', description: '使用统一媒体管理系统，需要员工或管理员权限' })
+  @ApiParam({ name: 'mediaId', description: '媒体文件ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '媒体文件不存在' })
+  async getProductMediaById(@Param('mediaId', ParseIntPipe) mediaId: number) {
+    return await this.productMediaService.getProductMediaById(mediaId);
+  }
+
+  @Post('media/set-main/:productId/:mediaId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '设置产品主图', description: '使用统一媒体管理系统，需要员工或管理员权限' })
   @ApiParam({ name: 'productId', description: '产品ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: '迁移完成' })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: '权限不足' })
-  async batchMigrateProductMediaToCdn(@Param('productId', ParseIntPipe) productId: number) {
-    return await this.productMediaService.batchMigrateProductMediaToCdn(productId);
+  @ApiParam({ name: 'mediaId', description: '媒体文件ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: '设置成功' })
+  async setProductMainImage(
+    @Param('productId', ParseIntPipe) productId: number,
+    @Param('mediaId', ParseIntPipe) mediaId: number
+  ) {
+    return await this.productMediaService.setProductMainImage(productId, mediaId);
+  }
+
+  @Get('media/stats/:productId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Staff, Role.Admin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '获取产品媒体统计', description: '使用统一媒体管理系统，需要员工或管理员权限' })
+  @ApiParam({ name: 'productId', description: '产品ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: '获取成功' })
+  async getProductMediaStats(@Param('productId', ParseIntPipe) productId: number) {
+    return await this.productMediaService.getProductMediaStats(productId);
   }
 
   // ================================
