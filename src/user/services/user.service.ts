@@ -133,11 +133,6 @@ export class UserService {
         timestamp: new Date().toISOString(),
       });
 
-      this.customLogger.info('用户密码已更新', { userId }, {
-        module: 'UserService',
-        action: 'updatePassword',
-      });
-
       return updatedUser;
     } catch (error) {
       throw error;
@@ -155,11 +150,6 @@ export class UserService {
         data: { 
           last_login: new Date(),
         },
-      });
-
-      this.customLogger.info('更新用户活跃时间', { userId }, {
-        module: 'UserService',
-        action: 'updateLastActivity',
       });
     } catch (error) {
       throw error;

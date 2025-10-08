@@ -1,6 +1,39 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaymentMethod, PaymentStatus } from './payment-query.dto';
 
+// 用户信息DTO
+export class UserInfoDto {
+  @ApiProperty({ description: '用户ID', example: 1 })
+  id: number;
+
+  @ApiProperty({ description: '用户名', example: 'john_doe' })
+  username: string;
+
+  @ApiProperty({ description: '用户邮箱', example: 'john@example.com' })
+  email: string;
+}
+
+// 订单信息DTO
+export class OrderInfoDto {
+  @ApiProperty({ description: '订单ID', example: 1 })
+  id: number;
+
+  @ApiProperty({ description: '订单号', example: 'ORD-2024-001' })
+  order_number: string;
+
+  @ApiProperty({ description: '订单状态', example: 'PAID' })
+  status: string;
+
+  @ApiProperty({ description: '订单总金额', example: 299.99 })
+  total_amount: number;
+
+  @ApiProperty({ description: '支付状态', example: 'PAID' })
+  payment_status: string;
+
+  @ApiProperty({ description: '用户信息', type: UserInfoDto })
+  user: UserInfoDto;
+}
+
 // 支付日志响应DTO
 export class PaymentLogDto {
   @ApiProperty({ description: '支付日志ID', example: 1 })
@@ -38,37 +71,11 @@ export class PaymentLogDto {
 
   @ApiProperty({ description: '创建时间', example: '2024-01-15T10:30:00Z' })
   created_at: Date;
+
+  @ApiProperty({ description: '订单信息', type: OrderInfoDto })
+  order: OrderInfoDto;
 }
 
-// 用户信息DTO
-export class UserInfoDto {
-  @ApiProperty({ description: '用户ID', example: 1 })
-  id: number;
-
-  @ApiProperty({ description: '用户名', example: 'john_doe' })
-  username: string;
-
-  @ApiProperty({ description: '用户邮箱', example: 'john@example.com' })
-  email: string;
-}
-
-// 订单信息DTO
-export class OrderInfoDto {
-  @ApiProperty({ description: '订单ID', example: 1 })
-  id: number;
-
-  @ApiProperty({ description: '订单号', example: 'ORD-2024-001' })
-  order_number: string;
-
-  @ApiProperty({ description: '订单状态', example: 'PAID' })
-  status: string;
-
-  @ApiProperty({ description: '订单总金额', example: 299.99 })
-  total_amount: number;
-
-  @ApiProperty({ description: '用户信息', type: UserInfoDto })
-  user: UserInfoDto;
-}
 
 // 管理员信息DTO
 export class AdminInfoDto {
@@ -82,11 +89,8 @@ export class AdminInfoDto {
   email: string;
 }
 
-// 支付详情响应DTO（包含订单和用户信息）
+// 支付详情响应DTO（包含管理员信息）
 export class PaymentDetailDto extends PaymentLogDto {
-  @ApiProperty({ description: '订单信息', type: OrderInfoDto })
-  order: OrderInfoDto;
-
   @ApiProperty({ description: '管理员信息', type: AdminInfoDto })
   admin: AdminInfoDto;
 }

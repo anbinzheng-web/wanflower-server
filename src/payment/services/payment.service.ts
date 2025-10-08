@@ -157,7 +157,19 @@ export class PaymentService {
       bank_name: payment.bank_name || undefined,
       account_last_four: payment.account_last_four || undefined,
       admin_id: payment.admin_id,
-      created_at: payment.created_at
+      created_at: payment.created_at,
+      order: {
+        id: payment.order.id,
+        order_number: payment.order.order_number,
+        status: payment.order.status,
+        total_amount: Number(payment.order.total_amount),
+        payment_status: payment.order.payment_status,
+        user: {
+          id: payment.order.user.id,
+          username: payment.order.user.username,
+          email: payment.order.user.email
+        }
+      }
     }));
 
     return {
@@ -223,9 +235,18 @@ export class PaymentService {
         order_number: payment.order.order_number,
         status: payment.order.status,
         total_amount: Number(payment.order.total_amount),
-        user: payment.order.user
+        payment_status: payment.order.payment_status,
+        user: {
+          id: payment.order.user.id,
+          username: payment.order.user.username,
+          email: payment.order.user.email
+        }
       },
-      admin: payment.admin
+      admin: {
+        id: payment.admin.id,
+        username: payment.admin.username,
+        email: payment.admin.email
+      }
     };
   }
 
